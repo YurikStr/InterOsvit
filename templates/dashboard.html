@@ -1,0 +1,466 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Особистий кабінет — InterOsvit</title>
+
+    <script
+        src="{{ url_for('static', filename='js/dashboard.js') }}"
+        defer
+    ></script>
+</head>
+
+<body>
+
+    <!-- Повідомлення системи -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Особистий кабінет -->
+    <h1>Особистий кабінет</h1>
+
+    <h2>Вітаємо, {{ user["username"] }}!</h2>
+
+    <!-- Інформація про профіль -->
+    <h3>Інформація про профіль</h3>
+
+    <p>Ім'я користувача: {{ user["username"] }}</p>
+
+    <p>Електронна пошта: {{ user["email"] }}</p>
+
+    <p>Дата реєстрації: {{ user["created_at"] }}</p>
+
+    <hr>
+
+    <!-- Статистика користувача -->
+    <h3>Моя статистика</h3>
+
+    <p>
+        Пройдено ігор:
+        {{ statistics["games_played"] }}
+    </p>
+
+    <p>
+        Загальна кількість балів:
+        {{ statistics["total_score"] }}
+    </p>
+
+    <p>
+        Правильних відповідей:
+        {{ statistics["correct_answers"] }}
+    </p>
+
+    <p>
+        Усього запитань:
+        {{ statistics["total_questions"] }}
+    </p>
+
+    <hr>
+
+    <!-- Тарифний план -->
+    <section id="user-plan">
+
+        <h2>Мій тарифний план</h2>
+
+        <p>
+            Поточний тариф:
+            <strong>{{ quota["plan"] | upper }}</strong>
+        </p>
+
+        <p>
+            Місячний ліміт створення ігор:
+            <strong>{{ quota["limit"] }}</strong>
+        </p>
+
+        <p>
+            Створено ігор цього місяця:
+            <strong>{{ quota["used"] }}</strong>
+        </p>
+
+        <p>
+            Залишилося доступних створень:
+            <strong>{{ quota["remaining"] }}</strong>
+        </p>
+
+        <p>Використання місячного ліміту:</p>
+
+        <progress
+            value="{{ quota['used'] }}"
+            max="{{ quota['limit'] }}"
+            style="width: 300px; max-width: 100%;"
+        ></progress>
+
+        <p>
+            {{ quota["used"] }}
+            із
+            {{ quota["limit"] }}
+            ігор
+        </p>
+
+        {% if quota["remaining"] == 0 %}
+
+            <p>
+                Ви використали місячний ліміт створення ігор.
+                Нові ігри можна буде створювати наступного місяця.
+            </p>
+
+        {% endif %}
+
+    </section>
+
+    <hr>
+
+    <!-- Створені користувачем ігри -->
+    <section id="my-games">
+
+        <h2>Мої ігри</h2>
+
+        {% if quota["remaining"] > 0 %}
+
+            <p>
+                <a href="{{ url_for('create_game_route') }}">
+                    Створити нову гру
+                </a>
+            </p>
+
+        {% else %}
+
+            <p>
+                Створення нових ігор тимчасово недоступне.
+                Місячний ліміт вичерпано.
+            </p>
+
+        {% endif %}
+
+        {% if games %}
+
+            <!-- Пошук ігор -->
+            <div>
+
+                <label for="game-search">
+                    Пошук серед моїх ігор:
+                </label>
+
+                <input
+                    type="search"
+                    id="game-search"
+                    placeholder="Назва, предмет або тема..."
+                >
+
+                <p id="search-empty" hidden>
+                    За вашим запитом ігор не знайдено.
+                </p>
+
+            </div>
+
+            <hr>
+
+            <!-- Список ігор -->
+            {% for game in games %}
+
+                <div
+                    class="game-card"
+                    data-search="{{ (
+                        game['title'] ~ ' ' ~
+                        game['subject'] ~ ' ' ~
+                        (game['topic'] or '')
+                    ) | lower }}">
+
+                    <h3>{{ game["title"] }}</h3>
+
+                    <p>
+                        Предмет: {{ game["subject"] }}
+                    </p>
+
+                    <p>
+                        Тема: {{ game["topic"] or "Не вказана" }}
+                    </p>
+
+                    <p>
+                        Складність: {{ game["difficulty"] }}
+                    </p>
+
+                    <p>
+                        Запитання:
+                        {{ game["saved_questions"] }}
+                        із
+                        {{ game["question_count"] }}
+                    </p>
+
+                    <!-- Статус гри -->
+                    {% if game["generation_status"] == "generating" %}
+
+                        <p>
+                            Статус: Генерація виконується...
+                        </p>
+
+                    {% elif game["saved_questions"] == 0 %}
+
+                        <p>
+                            Статус: Очікує генерації запитань
+                        </p>
+
+                    {% elif game["saved_questions"] < game["question_count"] %}
+
+                        <p>
+                            Статус: Запитання підготовлені частково
+                        </p>
+
+                    {% else %}
+
+                        <p>
+                            Статус: Гра готова до проходження
+                        </p>
+
+                    {% endif %}
+
+                    <!-- Генерація запитань -->
+                    {% if game["saved_questions"] == 0 %}
+
+                        <h4>Генерація навчальних запитань</h4>
+
+                        <form
+                            method="POST"
+                            action="{{ url_for(
+                                'generate_game_questions_route',
+                                game_id=game['id']
+                            ) }}">
+
+                            <input
+                                type="hidden"
+                                name="generate_csrf_token"
+                                value="{{ generate_csrf_token }}"
+                            >
+
+                            {% if game["generation_status"] == "generating" %}
+
+                                <button type="button" disabled>
+                                    Генерація виконується...
+                                </button>
+
+                            {% elif ai_enabled and game["generation_status"] == "pending" %}
+
+                                <button type="submit">
+                                    Згенерувати запитання
+                                </button>
+
+                            {% else %}
+
+                                <button type="button" disabled>
+                                    Згенерувати запитання
+                                </button>
+
+                                {% if not ai_enabled %}
+
+                                    <p>
+                                        Генерація через OpenAI
+                                        тимчасово вимкнена.
+                                    </p>
+
+                                {% endif %}
+
+                            {% endif %}
+
+                        </form>
+
+                    {% endif %}
+
+                    <!-- Посилання на гру -->
+                    <h4>Доступ до гри</h4>
+
+                    <p>
+
+                        <a href="{{ url_for(
+                            'game_page',
+                            token=game['share_token'],
+                            _external=True
+                        ) }}">
+                            Відкрити гру
+                        </a>
+
+                    </p>
+
+                    <!-- Копіювання посилання -->
+                    <button
+                        type="button"
+                        class="copy-game-link"
+                        data-url="{{ url_for(
+                            'game_page',
+                            token=game['share_token'],
+                            _external=True
+                        ) }}"
+                    >
+                        Скопіювати посилання
+                    </button>
+
+
+                    <!-- Видалення власної гри -->
+                    <h4>Керування грою</h4>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'delete_game_route',
+                            game_id=game['id']
+                        ) }}"
+                        onsubmit="return confirm('Видалити цю гру? Посилання перестане працювати, а місячний ліміт не відновиться.');"
+                    >
+
+                        <input
+                            type="hidden"
+                            name="delete_csrf_token"
+                            value="{{ delete_csrf_token }}"
+                        >
+
+                        <button
+                            type="submit"
+                            {% if game["generation_status"] == "generating" %}
+                                disabled
+                            {% endif %}
+                        >
+                            Видалити гру
+                        </button>
+
+                    </form>
+
+                </div>
+
+                <hr>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p>
+                Ви ще не створили жодної гри.
+            </p>
+
+        {% endif %}
+
+    </section>
+
+    <!-- Історія проходження ігор -->
+    <section id="game-history">
+
+        <h2>Історія проходження ігор</h2>
+
+        {% if quota["plan"] == "free" %}
+
+            <p>
+                На тарифі Free відображаються
+                останні 5 результатів.
+            </p>
+
+        {% else %}
+
+            <p>
+                Доступна повна історія проходження ігор.
+            </p>
+
+        {% endif %}
+
+
+        {% if results %}
+
+            <table border="1" cellpadding="10" cellspacing="0">
+
+                <thead>
+
+                    <tr>
+                        <th>Назва гри</th>
+                        <th>Предмет</th>
+                        <th>Результат</th>
+                        <th>Правильних відповідей</th>
+                        <th>Дата проходження</th>
+                        <th>Дії</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for result in results %}
+
+                        <tr>
+
+                            <td>
+                                {{ result["game_title"] }}
+                            </td>
+
+                            <td>
+                                {{ result["subject"] }}
+                            </td>
+
+                            <td>
+                                {{ result["score"] }} балів
+                            </td>
+
+                            <td>
+                                {{ result["correct_answers"] }}
+                                /
+                                {{ result["total_questions"] }}
+                            </td>
+
+                            <td>
+                                {{ result["completed_at"] }}
+                            </td>
+
+                            <td>
+
+                                {% if result["game_deleted_at"] %}
+
+                                    <span>
+                                        Гру видалено
+                                    </span>
+
+                                {% else %}
+
+                                    <a href="{{ url_for(
+                                        'game_page',
+                                        token=result['share_token']
+                                    ) }}">
+                                        Пройти ще раз
+                                    </a>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        {% else %}
+
+            <p>
+                Ви ще не пройшли жодної гри.
+            </p>
+
+        {% endif %}
+
+    </section>
+
+    <hr>
+
+
+    <!-- Вихід з облікового запису -->
+    <p>
+        <a href="{{ url_for('logout') }}">
+            Вийти з облікового запису
+        </a>
+    </p>
+
+</body>
+</html>

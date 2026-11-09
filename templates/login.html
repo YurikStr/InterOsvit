@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Вхід — InterOsvit</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+<body>
+
+    <main class="container">
+
+        <h1>Вхід до InterOsvit</h1>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form
+            method="POST"
+            action="{{ url_for('login') }}"
+        >
+
+            <!-- CSRF-захист форми входу -->
+            <input
+                type="hidden"
+                name="login_csrf_token"
+                value="{{ login_csrf_token }}"
+            >
+
+            <label for="email">
+                Електронна пошта
+            </label>
+
+            <input
+                type="email"
+                id="email"
+                name="email"
+                autocomplete="email"
+                required
+            >
+
+            <label for="password">
+                Пароль
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                name="password"
+                autocomplete="current-password"
+                required
+            >
+
+            <button type="submit">
+                Увійти
+            </button>
+
+        </form>
+
+        <p>
+            Ще не маєте облікового запису?
+            <a href="{{ url_for('register') }}">
+                Зареєструватися
+            </a>
+        </p>
+
+        <p>
+            <a href="{{ url_for('home') }}">
+                На головну
+            </a>
+        </p>
+
+    </main>
+
+</body>
+</html>

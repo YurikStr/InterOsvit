@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>InterOsvit — Навчайся граючи!</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="container navbar">
+
+            <a href="/" class="logo">InterOsvit</a>
+
+            <nav class="navigation">
+                <a href="#home">Головна</a>
+                <a href="#subjects">Можливості</a>
+                <a href="#about">Про нас</a>
+            </nav>
+
+            <a href="/login" class="login-button">Увійти</a>
+
+        </div>
+    </header>
+
+
+    <main>
+
+        <section class="hero" id="home">
+            <div class="container hero-content">
+
+                <div class="hero-text">
+                    <h1>Навчайся граючи!</h1>
+
+                    <p>
+                        Перетворюй навчання на цікаві ігри
+                        за допомогою штучного інтелекту.
+                    </p>
+
+                    <a href="/register" class="primary-button">
+                        Почати навчання
+                    </a>
+                </div>
+
+                <div class="hero-image">
+                    <div class="image-placeholder">
+                        <span>InterOsvit</span>
+                        <p>Твій AI-помічник у навчанні</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <section class="subjects" id="subjects">
+            <div class="container">
+
+                <h2>Оберіть навчальний предмет</h2>
+
+                <div class="subject-grid">
+
+                    <div class="subject-card">Математика</div>
+                    <div class="subject-card">Українська мова</div>
+                    <div class="subject-card">Англійська мова</div>
+                    <div class="subject-card">Інформатика</div>
+                    <div class="subject-card">Біологія</div>
+                    <div class="subject-card">Географія</div>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <section class="how-it-works" id="about">
+            <div class="container">
+
+                <h2>Як це працює?</h2>
+
+                <div class="steps">
+
+                    <div class="step-card">
+                        <span>01</span>
+                        <h3>Обери предмет</h3>
+                        <p>Вибери навчальну дисципліну та тему.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <span>02</span>
+                        <h3>Згенеруй завдання</h3>
+                        <p>Штучний інтелект створить навчальні завдання.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <span>03</span>
+                        <h3>Отримуй бали</h3>
+                        <p>Виконуй завдання та відстежуй результати.</p>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <section class="start-section">
+            <div class="container start-content">
+
+                <h2>Навчання нового рівня</h2>
+
+                <p>
+                    Перевіряй відповіді, аналізуй помилки
+                    та відстежуй власний прогрес.
+                </p>
+
+                <a href="/register" class="light-button">
+                    Почати навчання
+                </a>
+
+            </div>
+        </section>
+
+    </main>
+
+
+    <footer class="footer">
+        <div class="container">
+
+            <h3>InterOsvit</h3>
+
+            <p>
+                Інтерактивне навчання з використанням
+                штучного інтелекту.
+            </p>
+
+            <p>© 2026 InterOsvit. Усі права захищені.</p>
+
+        </div>
+    </footer>
+
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</body>
+</html>

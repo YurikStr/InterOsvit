@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Створення гри — InterOsvit</title>
+</head>
+<body>
+
+    <h1>Створення навчальної гри</h1>
+
+    <p>Налаштуй параметри своєї майбутньої гри.</p>
+
+    <!-- Повідомлення користувачу -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form
+        method="POST"
+        action="{{ url_for('create_game_route') }}"
+    >
+
+        <!-- CSRF-захист створення гри -->
+        <input
+            type="hidden"
+            name="create_game_csrf_token"
+            value="{{ create_game_csrf_token }}"
+        >
+
+        <label for="title">Назва гри:</label>
+        <input
+            type="text"
+            id="title"
+            name="title"
+            placeholder="Назва гри"
+            required
+        >
+
+        <br><br>
+
+        <label for="subject">Навчальний предмет:</label>
+        <select id="subject" name="subject" required>
+            <option value="">Обери предмет</option>
+            <option value="Математика">Математика</option>
+            <option value="Українська мова">Українська мова</option>
+            <option value="Англійська мова">Англійська мова</option>
+            <option value="Інформатика">Інформатика</option>
+            <option value="Біологія">Біологія</option>
+            <option value="Географія">Географія</option>
+        </select>
+
+        <br><br>
+
+        <label for="topic">Тема гри:</label>
+        <input
+            type="text"
+            id="topic"
+            name="topic"
+            placeholder="Тема гри"
+            required
+        >
+
+        <br><br>
+
+        <label for="difficulty">Складність:</label>
+        <select id="difficulty" name="difficulty" required>
+            <option value="Легка">Легка</option>
+            <option value="Середня" selected>Середня</option>
+            <option value="Важка">Важка</option>
+        </select>
+
+        <br><br>
+
+        <label for="question_count">Кількість запитань:</label>
+        <select
+            id="question_count"
+            name="question_count"
+            required
+        >
+            <option value="5">5 запитань</option>
+            <option value="10" selected>10 запитань</option>
+            <option value="15">15 запитань</option>
+            <option value="20">20 запитань</option>
+        </select>
+
+        <br><br>
+
+        <button type="submit">
+            Створити гру
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="{{ url_for('dashboard') }}">
+        Повернутися до кабінету
+    </a>
+
+</body>
+</html>

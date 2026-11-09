@@ -1,0 +1,36 @@
+
+# Секрети та налаштування
+.env
+.env.*
+!.env.example
+
+# Віртуальне середовище
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Бази даних SQLite
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
+
+# Резервні копії
+backups/
+*.bak
+
+# Логи
+*.log
+logs/
+
+# Тимчасові файли
+*.tmp
+*.temp

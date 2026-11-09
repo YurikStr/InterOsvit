@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ game["title"] }} — InterOsvit</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <main class="container">
+
+        <h1>{{ game["title"] }}</h1>
+
+        <p>Предмет: {{ game["subject"] }}</p>
+        <p>Тема: {{ game["topic"] }}</p>
+        <p>Складність: {{ game["difficulty"] }}</p>
+
+        <hr>
+
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        {% if result %}
+
+            <h2>Результат проходження</h2>
+{% if result_saved %}
+    <p>Ваш результат успішно збережено в особистому кабінеті!</p>
+{% else %}
+    <p>
+        Ви пройшли гру як гість.
+        Результат не збережено в особистій історії.
+    </p>
+
+    <a href="{{ url_for('login') }}">
+        Увійти в обліковий запис
+    </a>
+{% endif %}
+            <h3>
+                {{ result["score"] }} із {{ result["total"] }} балів
+            </h3>
+
+            <p>
+                Правильних відповідей:
+                {{ result["percentage"] }}%
+            </p>
+
+            <h2>Перевірка відповідей</h2>
+
+            {% for item in result["details"] %}
+
+                <div>
+                    <h3>{{ loop.index }}. {{ item["question"] }}</h3>
+
+                    <p>
+                        Твоя відповідь: {{ item["user_answer"] }}
+                    </p>
+
+                    {% if item["is_correct"] %}
+                        <p>Правильно!</p>
+                    {% else %}
+                        <p>Неправильно.</p>
+
+                        <p>
+                            Правильна відповідь:
+                            {{ item["correct_answer"] }}
+                        </p>
+                    {% endif %}
+
+                    <p>
+                        Пояснення: {{ item["explanation"] }}
+                    </p>
+                </div>
+
+                <hr>
+
+            {% endfor %}
+
+            <a href="{{ url_for('game_page', token=game['share_token']) }}">
+                Пройти ще раз
+            </a>
+
+        {% elif questions %}
+
+            <h2>Навчальний тест</h2>
+
+            <p>Кількість запитань: {{ questions|length }}</p>
+
+            <form method="POST"
+                  action="{{ url_for('game_page', token=game['share_token']) }}">
+            <input
+            type="hidden"
+            name="attempt_token"
+            value="{{ attempt_token }}">
+
+                {% for question in questions %}
+
+                    <fieldset>
+                        <legend>
+                            {{ loop.index }}.
+                            {{ question["question_text"] }}
+                        </legend>
+
+                        {% for letter, text in [
+                            ("A", question["option_a"]),
+                            ("B", question["option_b"]),
+                            ("C", question["option_c"]),
+                            ("D", question["option_d"])
+                        ] %}
+
+                            <p>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="question_{{ question['id'] }}"
+                                        value="{{ letter }}"
+                                        required
+                                    >
+
+                                    {{ letter }}. {{ text }}
+                                </label>
+                            </p>
+
+                        {% endfor %}
+
+                    </fieldset>
+
+                    <br>
+
+                {% endfor %}
+
+                <button type="submit">
+                    Завершити тест
+                </button>
+
+            </form>
+
+        {% else %}
+
+            <h2>Запитання ще не підготовлені</h2>
+
+            <p>
+                Для цієї гри ще не згенеровано навчальних завдань.
+            </p>
+
+        {% endif %}
+
+        <hr>
+
+        <a href="{{ url_for('home') }}">
+            На головну
+        </a>
+
+    </main>
+
+</body>
+</html>
