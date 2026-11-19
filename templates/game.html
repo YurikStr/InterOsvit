@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -7,158 +6,228 @@
 
     <title>{{ game["title"] }} — InterOsvit</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body class="quiz-page">
 
-    <main class="container">
+    <header class="header quiz-header">
+        <div class="container navbar quiz-navbar">
+            <a href="{{ url_for('home') }}" class="logo">InterOsvit</a>
 
-        <h1>{{ game["title"] }}</h1>
+            <nav class="navigation quiz-navigation" aria-label="Основна навігація">
+                <a href="{{ url_for('home') }}">Головна</a>
+                {% if session.get("user_id") %}
+                    <a href="{{ url_for('dashboard') }}">Мій кабінет</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Увійти</a>
+                {% endif %}
+            </nav>
 
-        <p>Предмет: {{ game["subject"] }}</p>
-        <p>Тема: {{ game["topic"] }}</p>
-        <p>Складність: {{ game["difficulty"] }}</p>
+            <a class="quiz-header-link" href="{{ url_for('home') }}">На головну</a>
+        </div>
+    </header>
 
-        <hr>
+    <main class="quiz-main">
+        <div class="container">
+            <section class="quiz-intro" aria-labelledby="quiz-heading">
+                <p class="quiz-eyebrow">Інтерактивна навчальна гра</p>
+                <h1 id="quiz-heading">{{ game["title"] }}</h1>
+                <p class="quiz-intro-description">
+                    Перевір знання, дізнайся свій результат і розбери відповіді.
+                </p>
 
-        {% with messages = get_flashed_messages() %}
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        {% endwith %}
+                <div class="quiz-meta" aria-label="Інформація про гру">
+                    <span><strong>Предмет:</strong> {{ game["subject"] }}</span>
+                    <span><strong>Тема:</strong> {{ game["topic"] or "Не вказана" }}</span>
+                    <span><strong>Складність:</strong> {{ game["difficulty"] }}</span>
+                </div>
+            </section>
 
-        {% if result %}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="quiz-messages" role="status" aria-live="polite">
+                        {% for message in messages %}
+                            <p class="quiz-message">{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
 
-            <h2>Результат проходження</h2>
-{% if result_saved %}
-    <p>Ваш результат успішно збережено в особистому кабінеті!</p>
-{% else %}
-    <p>
-        Ви пройшли гру як гість.
-        Результат не збережено в особистій історії.
-    </p>
+            {% if result %}
+                <section class="quiz-result-summary" aria-labelledby="quiz-result-title">
+                    <p class="quiz-kicker">Тест завершено</p>
+                    <h2 id="quiz-result-title">Твій результат</h2>
 
-    <a href="{{ url_for('login') }}">
-        Увійти в обліковий запис
-    </a>
-{% endif %}
-            <h3>
-                {{ result["score"] }} із {{ result["total"] }} балів
-            </h3>
+                    <div class="quiz-score-grid">
+                        <div class="quiz-score-main">
+                            <span class="quiz-score-number">{{ result["score"] }} <span>із {{ result["total"] }}</span></span>
+                            <p>Правильних відповідей</p>
+                        </div>
+                        <div class="quiz-score-percent">
+                            <span>{{ result["percentage"] }}%</span>
+                            <p>Успішність</p>
+                        </div>
+                    </div>
 
-            <p>
-                Правильних відповідей:
-                {{ result["percentage"] }}%
-            </p>
+                    <progress
+                        class="quiz-progress"
+                        value="{{ result['score'] }}"
+                        max="{{ result['total'] }}"
+                        aria-label="Частка правильних відповідей"
+                    >{{ result["percentage"] }}%</progress>
 
-            <h2>Перевірка відповідей</h2>
-
-            {% for item in result["details"] %}
-
-                <div>
-                    <h3>{{ loop.index }}. {{ item["question"] }}</h3>
-
-                    <p>
-                        Твоя відповідь: {{ item["user_answer"] }}
-                    </p>
-
-                    {% if item["is_correct"] %}
-                        <p>Правильно!</p>
-                    {% else %}
-                        <p>Неправильно.</p>
-
-                        <p>
-                            Правильна відповідь:
-                            {{ item["correct_answer"] }}
+                    {% if result_saved %}
+                        <p class="quiz-save-note quiz-save-note-success">
+                            Результат збережено в особистому кабінеті.
                         </p>
+                    {% else %}
+                        <div class="quiz-save-note">
+                            <p>Ти пройшов гру як гість, тому результат не збережено в особистій історії.</p>
+                            <a href="{{ url_for('login') }}">Увійти в обліковий запис</a>
+                        </div>
                     {% endif %}
 
-                    <p>
-                        Пояснення: {{ item["explanation"] }}
-                    </p>
-                </div>
+                    <div class="quiz-result-actions">
+                        <a class="quiz-button quiz-button-primary" href="{{ url_for('game_page', token=game['share_token']) }}">
+                            Пройти ще раз
+                        </a>
+                        {% if session.get("user_id") %}
+                            <a class="quiz-button quiz-button-outline" href="{{ url_for('dashboard') }}">
+                                До кабінету
+                            </a>
+                        {% else %}
+                            <a class="quiz-button quiz-button-outline" href="{{ url_for('home') }}">
+                                На головну
+                            </a>
+                        {% endif %}
+                    </div>
+                </section>
 
-                <hr>
+                <section class="quiz-review" aria-labelledby="quiz-review-title">
+                    <div class="quiz-section-heading">
+                        <p class="quiz-kicker">Робота над помилками</p>
+                        <h2 id="quiz-review-title">Перевірка відповідей</h2>
+                        <p>Переглянь свої відповіді та пояснення до кожного завдання.</p>
+                    </div>
 
-            {% endfor %}
+                    <div class="quiz-question-list">
+                        {% for item in result["details"] %}
+                            <article class="quiz-review-card {{ 'quiz-review-correct' if item['is_correct'] else 'quiz-review-incorrect' }}">
+                                <div class="quiz-review-heading">
+                                    <span class="quiz-question-index">Запитання {{ loop.index }}</span>
+                                    {% if item["is_correct"] %}
+                                        <span class="quiz-answer-status quiz-answer-correct">Правильно</span>
+                                    {% else %}
+                                        <span class="quiz-answer-status quiz-answer-incorrect">Потрібно повторити</span>
+                                    {% endif %}
+                                </div>
 
-            <a href="{{ url_for('game_page', token=game['share_token']) }}">
-                Пройти ще раз
-            </a>
+                                <h3 class="quiz-question-text">{{ item["question"] }}</h3>
 
-        {% elif questions %}
+                                <dl class="quiz-answer-details">
+                                    <div>
+                                        <dt>Твоя відповідь</dt>
+                                        <dd>{{ item["user_answer"] }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Правильна відповідь</dt>
+                                        <dd>{{ item["correct_answer"] }}</dd>
+                                    </div>
+                                </dl>
 
-            <h2>Навчальний тест</h2>
-
-            <p>Кількість запитань: {{ questions|length }}</p>
-
-            <form method="POST"
-                  action="{{ url_for('game_page', token=game['share_token']) }}">
-            <input
-            type="hidden"
-            name="attempt_token"
-            value="{{ attempt_token }}">
-
-                {% for question in questions %}
-
-                    <fieldset>
-                        <legend>
-                            {{ loop.index }}.
-                            {{ question["question_text"] }}
-                        </legend>
-
-                        {% for letter, text in [
-                            ("A", question["option_a"]),
-                            ("B", question["option_b"]),
-                            ("C", question["option_c"]),
-                            ("D", question["option_d"])
-                        ] %}
-
-                            <p>
-                                <label>
-                                    <input
-                                        type="radio"
-                                        name="question_{{ question['id'] }}"
-                                        value="{{ letter }}"
-                                        required
-                                    >
-
-                                    {{ letter }}. {{ text }}
-                                </label>
-                            </p>
-
+                                <div class="quiz-explanation">
+                                    <strong>Пояснення</strong>
+                                    <p>{{ item["explanation"] }}</p>
+                                </div>
+                            </article>
                         {% endfor %}
+                    </div>
+                </section>
 
-                    </fieldset>
+            {% elif questions %}
+                <section class="quiz-play" aria-labelledby="quiz-play-title">
+                    <div class="quiz-section-heading">
+                        <p class="quiz-kicker">Час перевірити знання</p>
+                        <h2 id="quiz-play-title">Навчальний тест</h2>
+                        <p>Запитань: <strong>{{ questions|length }}</strong>. Обери по одній відповіді в кожному завданні.</p>
+                    </div>
 
-                    <br>
+                    <form
+                        class="quiz-form"
+                        method="POST"
+                        action="{{ url_for('game_page', token=game['share_token']) }}"
+                    >
+                        <!-- Токен поточної спроби: не видаляти. -->
+                        <input type="hidden" name="attempt_token" value="{{ attempt_token }}">
 
-                {% endfor %}
+                        <div class="quiz-question-list">
+                            {% for question in questions %}
+                                <fieldset class="quiz-question-card">
+                                    <legend>
+                                        <span class="quiz-question-index">Запитання {{ loop.index }} з {{ questions|length }}</span>
+                                        <span class="quiz-question-text">{{ question["question_text"] }}</span>
+                                    </legend>
 
-                <button type="submit">
-                    Завершити тест
-                </button>
+                                    <div class="quiz-options">
+                                        {% for letter, text in [
+                                            ("A", question["option_a"]),
+                                            ("B", question["option_b"]),
+                                            ("C", question["option_c"]),
+                                            ("D", question["option_d"])
+                                        ] %}
+                                            <label class="quiz-option">
+                                                <input
+                                                    type="radio"
+                                                    name="question_{{ question['id'] }}"
+                                                    value="{{ letter }}"
+                                                    required
+                                                >
+                                                <span class="quiz-option-letter" aria-hidden="true">{{ letter }}</span>
+                                                <span class="quiz-option-text">{{ text }}</span>
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                </fieldset>
+                            {% endfor %}
+                        </div>
 
-            </form>
+                        <div class="quiz-submit-bar">
+                            <div>
+                                <strong>Готовий завершити тест?</strong>
+                                <p>Переконайся, що відповів на всі {{ questions|length }} запитань.</p>
+                            </div>
+                            <button class="quiz-button quiz-button-primary" type="submit">Завершити тест</button>
+                        </div>
+                    </form>
+                </section>
 
-        {% else %}
+            {% else %}
+                <section class="quiz-empty" aria-labelledby="quiz-empty-title">
+                    <div class="quiz-empty-icon" aria-hidden="true">?</div>
+                    <p class="quiz-kicker">Гра готується</p>
+                    <h2 id="quiz-empty-title">Запитання ще не підготовлені</h2>
+                    <p>Для цієї гри ще не згенеровано навчальних завдань.</p>
+                    {% if session.get("user_id") %}
+                        <a class="quiz-button quiz-button-primary" href="{{ url_for('dashboard') }}">До кабінету</a>
+                    {% else %}
+                        <a class="quiz-button quiz-button-primary" href="{{ url_for('home') }}">На головну</a>
+                    {% endif %}
+                </section>
+            {% endif %}
 
-            <h2>Запитання ще не підготовлені</h2>
-
-            <p>
-                Для цієї гри ще не згенеровано навчальних завдань.
-            </p>
-
-        {% endif %}
-
-        <hr>
-
-        <a href="{{ url_for('home') }}">
-            На головну
-        </a>
-
+            <div class="quiz-bottom-link">
+                <a href="{{ url_for('home') }}">← Повернутися на головну</a>
+            </div>
+        </div>
     </main>
+
+    <footer class="footer quiz-footer">
+        <div class="container">
+            <h3>InterOsvit</h3>
+            <p>Інтерактивне навчання з використанням штучного інтелекту.</p>
+            <p>© 2026 InterOsvit. Усі права захищені.</p>
+        </div>
+    </footer>
 
 </body>
 </html>

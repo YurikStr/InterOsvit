@@ -1,0 +1,3 @@
+/* Additional form styles for the new textarea / selector; keeps existing design. */
+.create-form textarea{box-sizing:border-box;display:block;width:100%;min-height:116px;border:1px solid #cac8d6;border-radius:10px;padding:12px 14px;background:#fff;color:#222;font:inherit;line-height:1.5;resize:vertical}
+.create-form textarea:focus,.create-form select:focus{outline:2px solid #3528f5;outline-offset:2px}

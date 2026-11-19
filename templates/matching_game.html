@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ game['title'] }} — Знайди пари — InterOsvit</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/matching_game.css') }}">
+  <script src="{{ url_for('static', filename='js/matching_game.js') }}" defer></script>
+</head>
+<body class="mt-page">
+  <header class="mt-header"><div class="mt-container mt-nav">
+    <a class="mt-brand" href="{{ url_for('home') }}">InterOsvit</a>
+    <nav aria-label="Навігація"><a href="{{ url_for('home') }}">Головна</a>
+      {% if session.get('user_id') %}<a href="{{ url_for('dashboard') }}">Мій кабінет</a>
+      {% else %}<a href="{{ url_for('login') }}">Увійти</a>{% endif %}
+    </nav>
+  </div></header>
+  <main class="mt-container mt-main">
+    <p class="mt-eyebrow">Інтерактивна гра · Знайди відповідні пари</p>
+    <h1>{{ game['title'] }}</h1>
+    <p class="mt-muted">{{ game['subject'] }} · {{ game['topic'] }} · {{ game['difficulty'] }}</p>
+    {% with flashes = get_flashed_messages() %}
+      {% for message in flashes %}<p class="mt-flash" role="status">{{ message }}</p>{% endfor %}
+    {% endwith %}
+
+    {% if phase == 'empty' %}
+      <section class="mt-card"><h2>Пари ще не згенеровано</h2>
+        <p>Автор готує завдання. Спробуй пізніше.</p></section>
+    {% elif phase == 'unavailable' %}
+      <section class="mt-card"><h2>Гру тимчасово недоступно</h2>
+        <p>У наборі пар виявлено неправильні службові дані або повтори. Автор має виправити гру в редакторі.</p></section>
+    {% elif phase == 'complete' %}
+      <section class="mt-card mt-summary" aria-labelledby="mt-result-title">
+        <p class="mt-eyebrow">Завершено</p><h2 id="mt-result-title">Усі пари знайдено!</h2>
+        <p class="mt-big">{{ score }} <small>із {{ total }} балів</small></p>
+        <p>Правильно з першої спроби: <strong>{{ score }}</strong>. Помилкових спроб: <strong>{{ wrong_count }}</strong>.</p>
+        <progress value="{{ score }}" max="{{ total }}" aria-label="Отримані бали"></progress>
+        {% if result_saved %}<p class="mt-muted">Результат збережено у твоєму кабінеті.</p>
+        <p class="mt-muted">+{{ xp_earned }} XP за гру! <a href="{{ url_for('gamification.my_progress') }}">Переглянути досягнення</a></p>
+        {% else %}<p class="mt-muted">Це гостьове проходження: результат не записано в історію.</p>{% endif %}
+        <form method="post" action="{{ url_for('matching.play_game', token=game['share_token']) }}">
+          <input type="hidden" name="attempt_token" value="{{ attempt_token }}">
+          <button class="mt-primary" type="submit" name="action" value="restart">Зіграти ще раз</button>
+        </form>
+      </section>
+      <section class="mt-card mt-review" aria-labelledby="mt-review-title">
+        <h2 id="mt-review-title">Розбір пар</h2>
+        {% for p in review %}
+        <article class="mt-review-item"><h3>{{ loop.index }}. {{ p.left }} — {{ p.right }}</h3>
+          <p class="mt-muted">{{ 'Бал зараховано' if p.first_try else 'Знайдено після помилки — без бала' }}</p>
+          <p>{{ p.explanation }}</p></article>
+        {% endfor %}
+      </section>
+    {% else %}
+      <section class="mt-card" aria-labelledby="mt-play-title">
+        <div class="mt-stats"><strong>Знайдено {{ matched }} із {{ total }} пар</strong>
+          <span>Балів: {{ score }} · Помилок: {{ wrong_count }} · Серія: {{ current_streak }}</span></div>
+        <progress value="{{ matched }}" max="{{ total }}" aria-label="Прогрес гри"></progress>
+        {% if last %}<p class="mt-success" role="status">✓ {{ last['question_text'] }} — {{ last['option_a'] }}. {{ last['explanation'] }}</p>{% endif %}
+        {% if phase == 'limited' %}
+          <h2 id="mt-play-title">Спробу зупинено</h2>
+          <p>Досягнуто максимальної кількості хибних перевірок. Можна почати заново.</p>
+          <form method="post"><input type="hidden" name="attempt_token" value="{{ attempt_token }}">
+            <button class="mt-primary" type="submit" name="action" value="restart">Почати заново</button>
+          </form>
+        {% else %}
+          <h2 id="mt-play-title">Поєднай відповідні елементи</h2>
+          <p class="mt-muted">Вибери елемент зліва та його пару справа, потім натисни «Перевірити пару».</p>
+          <form id="mt-form" method="post" action="{{ url_for('matching.play_game', token=game['share_token']) }}">
+            <input type="hidden" name="attempt_token" value="{{ attempt_token }}">
+            <input type="hidden" name="action" value="check">
+            <div class="mt-fallback" id="mt-fallback">
+              <div><label for="mt-left">Лівий елемент</label>
+                <select id="mt-left" name="left_key" required><option value="">Обери елемент</option>
+                {% for item in left_items %}<option value="{{ item.key }}">{{ item.text }}</option>{% endfor %}
+                </select></div>
+              <div><label for="mt-right">Правий елемент</label>
+                <select id="mt-right" name="right_key" required><option value="">Обери відповідник</option>
+                {% for item in right_items %}<option value="{{ item.key }}">{{ item.text }}</option>{% endfor %}
+                </select></div>
+            </div>
+            <div class="mt-grid" id="mt-grid" hidden>
+              <div class="mt-group" aria-label="Ліві елементи"><h3>Ліворуч</h3>
+                {% for item in left_items %}
+                  <button type="button" class="mt-pick" data-side="left" data-key="{{ item.key }}" aria-pressed="false">{{ item.text }}</button>
+                {% endfor %}
+              </div>
+              <div class="mt-group" aria-label="Праві елементи"><h3>Праворуч</h3>
+                {% for item in right_items %}
+                  <button type="button" class="mt-pick" data-side="right" data-key="{{ item.key }}" aria-pressed="false">{{ item.text }}</button>
+                {% endfor %}
+              </div>
+            </div>
+            <p class="mt-hint" id="mt-hint" role="status" hidden>Обери елемент з кожної колонки.</p>
+            <button class="mt-primary" id="mt-check" type="submit">Перевірити пару</button>
+          </form>
+        {% endif %}
+      </section>
+    {% endif %}
+    <a class="mt-back" href="{{ url_for('home') }}">← На головну</a>
+  </main>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Premium v2 — тестові підписки · InterOsvit</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/premium_v2.css') }}">
+</head>
+<body>
+<header class="sub-top"><a href="{{ url_for('dashboard') }}">← Особистий кабінет</a><a href="/pricing">Тарифи</a></header>
+<main class="sub-wrap">
+  <span class="sub-kicker">InterOsvit · Premium v2</span>
+  <h1>Керування підпискою</h1>
+  <p class="sub-lead">Лише тестовий режим. Справжні гроші не списуються, реальні картки вводити не потрібно.</p>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}<div class="sub-notices" role="status">{% for msg in messages %}<p>{{ msg }}</p>{% endfor %}</div>{% endif %}
+  {% endwith %}
+  <div class="sub-grid">
+    <section class="sub-card">
+      <h2>Мій тариф</h2>
+      <div class="sub-big">{{ quota.plan|upper }}</div>
+      <p>Ліміт створення ігор: {{ quota.limit }} / місяць</p>
+      <p>Використано цього місяця: {{ quota.used }}</p>
+      <p>Доступно: {{ quota.remaining }}</p>
+    </section>
+    <section class="sub-card">
+      <h2>Підписка</h2>
+      {% if order %}
+        <p>Статус: <strong>{{ {'pending':'Очікує оплати','active':'Активна','cancel_pending':'Скасовано автопродовження','canceled':'Скасована','failed':'Оплату відхилено','expired':'Термін минув'}.get(order.status,order.status) }}</strong></p>
+        <p>Тестовий провайдер: {{ 'Локальний симулятор' if order.provider=='local' else 'LiqPay Sandbox' }}</p>
+        <p>Номер замовлення: <code>{{ order.order_id }}</code></p>
+        {% if order.period_start %}<p>Початок: {{ order.period_start }} UTC</p>{% endif %}
+        {% if order.period_end %}<p>Діє до: <strong>{{ order.period_end }} UTC</strong></p>{% endif %}
+        <p>Автопродовження: {{ 'Увімкнено' if order.auto_renew else 'Вимкнено' }}</p>
+      {% else %}
+        <p>Ще немає тестових підписок.</p>
+      {% endif %}
+    </section>
+  </div>
+  <section class="sub-card">
+    <h2>Premium · тестова ціна {{ '%.2f'|format(price_minor/100) }} грн / календарний місяць</h2>
+    <p>До 50 ігор на місяць, повна історія результатів. Це приклад ціни для тестування, не публічна пропозиція.</p>
+    {% if not order or order.status in ('failed','canceled','expired') %}
+      {% if dev %}
+        <form method="POST" action="{{ url_for('premium_v2.start') }}">
+          <input type="hidden" name="premium_v2_csrf" value="{{ csrf }}">
+          <button class="sub-button" type="submit">Оформити тестову підписку</button>
+        </form>
+      {% else %}<p>Симулятор доступний лише твоєму обліковому запису розробника на localhost.</p>{% endif %}
+    {% elif order.status=='pending' and not local %}
+      <a class="sub-button" href="{{ url_for('premium_v2.checkout', order_id=order.order_id) }}">Продовжити до LiqPay Sandbox</a>
+    {% endif %}
+    {% if order and order.status in ('pending','active') %}
+      <form method="POST" action="{{ url_for('premium_v2.cancel') }}">
+        <input type="hidden" name="premium_v2_csrf" value="{{ csrf }}">
+        <button class="sub-button sub-button-muted" type="submit">{{ 'Скасувати очікування' if order.status=='pending' else 'Вимкнути автопродовження' }}</button>
+      </form>
+    {% endif %}
+  </section>
+  {% if dev and order and order.provider=='local' %}
+  <section class="sub-card sub-simulator">
+    <h2>Локальний симулятор платіжного сервісу</h2>
+    <p>Кнопки працюють тільки з тестовою БД і тільки для облікового запису DEV_USER_ID. Це НЕ справжні транзакції LiqPay.</p>
+    <div class="sub-buttons">
+    {% if order.status=='pending' %}
+      <form method="POST" action="{{ url_for('premium_v2.simulate') }}"><input type="hidden" name="premium_v2_csrf" value="{{ csrf }}"><input type="hidden" name="event" value="success"><button class="sub-button" type="submit">Симулювати успішну оплату</button></form>
+      <form method="POST" action="{{ url_for('premium_v2.simulate') }}"><input type="hidden" name="premium_v2_csrf" value="{{ csrf }}"><input type="hidden" name="event" value="decline"><button class="sub-button sub-button-muted" type="submit">Симулювати відмову</button></form>
+    {% endif %}
+    {% if order.status=='active' %}
+      <form method="POST" action="{{ url_for('premium_v2.simulate') }}"><input type="hidden" name="premium_v2_csrf" value="{{ csrf }}"><input type="hidden" name="event" value="renew"><button class="sub-button" type="submit">Симулювати наступний платіж</button></form>
+    {% endif %}
+    {% if order.status in ('active','cancel_pending') %}
+      <form method="POST" action="{{ url_for('premium_v2.simulate') }}"><input type="hidden" name="premium_v2_csrf" value="{{ csrf }}"><input type="hidden" name="event" value="expire"><button class="sub-button sub-button-muted" type="submit">Симулювати завершення терміну</button></form>
+    {% endif %}
+    </div>
+  </section>
+  {% endif %}
+</main>
+</body>
+</html>

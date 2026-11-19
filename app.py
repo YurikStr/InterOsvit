@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from quality_check import check_questions
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-
+from premium_routes import premium_bp
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from database import (
     register_user,
@@ -29,9 +29,30 @@ from database import (
 load_dotenv()
 
 app = Flask(__name__)
+
+from premium_v2_routes import premium_v2_bp
+app.register_blueprint(premium_v2_bp)
+
+from wayforpay_test_routes import wayforpay_test_bp
+app.register_blueprint(wayforpay_test_bp)
+
+from gamification_routes import gamification_bp as interosvit_gamification_bp
+from gamification_store import progress_for_user as _io_progress_for_user
+from gamification_store import display_xp as _io_display_xp
+app.register_blueprint(interosvit_gamification_bp)
+@app.context_processor
+def _io_gamification_template_context():
+    return {"get_gamification": _io_progress_for_user,
+            "calculate_game_xp": _io_display_xp}
+
+from matching_routes import matching_bp as interosvit_matching_bp
+app.register_blueprint(interosvit_matching_bp)
+
+from question_editor_routes import editor_bp as question_editor_bp
+app.register_blueprint(question_editor_bp)
 APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
 IS_PRODUCTION = APP_ENV == "production"
-
+app.register_blueprint(premium_bp)
 secret_key = os.getenv("SECRET_KEY")
 if not secret_key or len(secret_key) < 32:
     raise RuntimeError("SECRET_KEY має містити щонайменше 32 символи.")
@@ -329,6 +350,7 @@ def dashboard():
 
 @app.route("/create_game", methods=["GET", "POST"])
 def create_game_route():
+    from game_settings import create_game_with_settings
 
     # 1. Перевірка авторизації
     if "user_id" not in session:
@@ -400,13 +422,13 @@ def create_game_route():
         try:
             question_count = int(question_count)
 
-            if not 1 <= question_count <= 20:
+            if not 5 <= question_count <= 20:
                 raise ValueError
 
         except (ValueError, TypeError):
             flash(
                 "Кількість запитань повинна "
-                "бути від 1 до 20!"
+                "бути від 5 до 20!"
             )
             return redirect(
                 url_for("create_game_route")
@@ -416,13 +438,21 @@ def create_game_route():
         # Перевірка тарифного ліміту
         # залишається в database.py
         try:
-            create_game(
+            game_mode = request.form.get('game_mode', 'interactive').strip()
+            custom_instructions = request.form.get('custom_instructions', '').strip()
+            if game_mode not in ('classic', 'interactive', 'true_false', 'matching'):
+                raise ValueError('Некоректний режим гри')
+            if len(custom_instructions) > 500:
+                raise ValueError('Додаткові побажання: максимум 500 символів')
+            create_game_with_settings(
                 user_id,
                 title,
                 subject,
                 topic,
                 difficulty,
-                question_count
+                question_count,
+                game_mode=game_mode,
+                custom_instructions=custom_instructions
             )
 
         except ValueError as error:
@@ -484,6 +514,16 @@ def game_page(token):
 
     if game is None:
         return "Гру не знайдено!", 404
+
+    from game_settings import get_game_settings
+    if get_game_settings(game['id'])['game_mode'] == 'matching':
+        if request.method != 'GET':
+            return 'Метод не дозволено', 405
+        return redirect(url_for('matching.play_game', token=token))
+    if get_game_settings(game['id'])['game_mode'] in ('interactive', 'true_false'):
+        if request.method != 'GET':
+            return 'Використай інтерактивний маршрут для цієї гри', 405
+        return redirect(url_for('interactive.play_game', token=token))
 
     questions = get_game_questions(game["id"])
     attempt_key = f"attempt_{game['id']}"
@@ -586,6 +626,7 @@ def logout():
 @limiter.limit("5 per hour", key_func=generation_user_key)
 @limiter.limit("20 per hour", key_func=get_remote_address)
 def generate_game_questions_route(game_id):
+    from game_settings import prepare_ai_topic
 
     # 1. Перевірка авторизації
     if "user_id" not in session:
@@ -658,7 +699,27 @@ def generate_game_questions_route(game_id):
 
     try:
         # 8. Генерація запитань
-        if generation_mode == "demo":
+        from game_settings import get_game_settings, prepare_ai_topic
+        if get_game_settings(game_id)['game_mode'] == 'matching':
+            from matching_mode import generate_matching_questions
+            questions = generate_matching_questions(
+                subject=game['subject'],
+                topic=game['topic'],
+                difficulty=game['difficulty'],
+                question_count=game['question_count'],
+                generation_mode=generation_mode,
+                custom_instructions=get_game_settings(game_id)['custom_instructions'],
+            )
+        elif get_game_settings(game_id)['game_mode'] == 'true_false':
+            from true_false_mode import generate_truefalse_questions
+            questions = generate_truefalse_questions(
+                subject=game['subject'],
+                topic=prepare_ai_topic(game_id, game['topic'] or 'Загальна тема'),
+                difficulty=game['difficulty'],
+                question_count=game['question_count'],
+                generation_mode=generation_mode,
+            )
+        elif generation_mode == "demo":
 
             from demo_generator import generate_demo_questions
 
@@ -672,10 +733,13 @@ def generate_game_questions_route(game_id):
         else:
 
             from ai import generate_questions
+            from verified_generation import generate_verified_questions
 
-            questions = generate_questions(
+            questions = generate_verified_questions(
+
+                generate_questions,
                 subject=game["subject"],
-                topic=game["topic"] or "Загальна тема",
+                topic=prepare_ai_topic(game_id, game['topic'] or 'Загальна тема'),
                 difficulty=game["difficulty"],
                 question_count=game["question_count"]
             )
@@ -817,6 +881,10 @@ def delete_game_route(game_id):
         )
 
     return redirect(url_for("dashboard"))
+
+
+from interactive_routes import interactive_bp
+app.register_blueprint(interactive_bp)
 
 if __name__ == "__main__":
     if IS_PRODUCTION:

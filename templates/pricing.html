@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Порівняння можливостей тарифів Free та Premium в InterOsvit.">
+    <title>Тарифи Free і Premium — InterOsvit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pricing.css') }}">
+</head>
+<body class="pricing-page">
+    <header class="header">
+        <div class="container navbar pricing-navbar">
+            <a class="logo" href="{{ url_for('home') }}">InterOsvit</a>
+            <nav class="pricing-navigation" aria-label="Основна навігація">
+                <a href="{{ url_for('home') }}">Головна</a>
+                {% if logged_in %}
+                    <a href="{{ url_for('dashboard') }}">Особистий кабінет</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Увійти</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="pricing-main container">
+        <div class="pricing-heading">
+            <span class="pricing-eyebrow">Обери свій формат навчання</span>
+            <h1>Тарифи InterOsvit</h1>
+            <p>Створюй інтерактивні ігри, проходь завдання та відстежуй свій прогрес.</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="pricing-messages" role="status">
+                    {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="pricing-grid">
+            <section class="pricing-card" aria-labelledby="free-title">
+    <div class="pricing-card-top">
+        <span class="pricing-pill">Базовий план</span>
+        <h2 id="free-title">Free</h2>
+        <p class="pricing-price">Безкоштовно</p>
+        <p class="pricing-description">
+            Для знайомства з навчальними іграми.
+        </p>
+    </div>
+
+    <ul class="pricing-benefits">
+        <li>До <strong>5 ігор</strong> на місяць</li>
+        <li>Останні <strong>5 результатів</strong> в історії</li>
+        <li>Генерація навчальних запитань (коли ввімкнена)</li>
+        <li>Поширення ігор за посиланням</li>
+        <li>Перегляд статистики навчання</li>
+    </ul>
+
+    {% if logged_in %}
+    <div class="pricing-card-action">
+        <div class="pricing-button pricing-button-current">
+            Ваш поточний тариф
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+            <section class="pricing-card pricing-card-premium" aria-labelledby="premium-title">
+                <div class="pricing-card-top">
+                    <span class="pricing-pill pricing-pill-premium">Більше можливостей</span>
+                    <h2 id="premium-title">Premium</h2>
+                    <p class="pricing-price">Платна підписка</p>
+                    <p class="pricing-description">Для активного навчання та регулярного створення завдань.</p>
+                </div>
+                <ul class="pricing-benefits">
+                    <li>До <strong>50 ігор</strong> на місяць</li>
+                    <li><strong>Повна історія</strong> результатів</li>
+                    <li>Генерація навчальних запитань (коли ввімкнена)</li>
+                    <li>Поширення ігор за посиланням</li>
+                    <li>Перегляд статистики навчання</li>
+                </ul>
+                <div class="pricing-card-action">
+                    <button type="button"
+                    class="pricing-button pricing-button-primary"
+                    disabled
+                    aria-describedby="premium-availability">
+                    Оформити Premium
+                </button>
+                <p id="premium-availability" class="pricing-unavailable">
+                    Оплата Premium поки недоступна.
+                    Підключення оплати заплановано в наступних оновленнях.
+                </p>
+            </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="pricing-footer">
+        <div class="container">© 2026 InterOsvit. Навчайся граючи!</div>
+    </footer>
+</body>
+</html>

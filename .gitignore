@@ -34,3 +34,11 @@ logs/
 # Тимчасові файли
 *.tmp
 *.temp
+# Локальні звіти
+reports/
+
+# Старі версії HTML та Python-файлів
+*.before_*
+
+# Тимчасові файли SQLite
+*.db-journal

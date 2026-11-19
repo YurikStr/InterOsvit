@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ game['title'] }} — InterOsvit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/interactive_game.css') }}">
+    <script src="{{ url_for('static', filename='js/interactive_game.js') }}" defer></script>
+</head>
+<body class="io-play-page">
+    <header class="header">
+        <div class="container navbar">
+            <a class="logo" href="{{ url_for('home') }}">InterOsvit</a>
+            <nav class="navigation" aria-label="Навігація">
+                <a href="{{ url_for('home') }}">Головна</a>
+                {% if session.get('user_id') %}
+                    <a href="{{ url_for('dashboard') }}">Мій кабінет</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Увійти</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="io-play-main">
+        <div class="io-play-container">
+            <div class="io-play-heading">
+                <span class="io-eyebrow">{{ "Правда чи неправда" if is_true_false else "Інтерактивна вікторина" }}</span>
+                <h1>{{ game['title'] }}</h1>
+                <p>{{ game['subject'] }} · {{ game['topic'] }} · {{ game['difficulty'] }}</p>
+            </div>
+
+            {% with messages = get_flashed_messages() %}
+                {% for message in messages %}<p class="io-alert" role="alert">{{ message }}</p>{% endfor %}
+            {% endwith %}
+
+            {% if phase == 'empty' %}
+                <section class="io-card">
+                    <h2>Гра поки що не готова</h2>
+                    <p>Автор ще не згенерував запитання. Спробуй пізніше.</p>
+                    <a class="io-button io-button-secondary" href="{{ url_for('home') }}">На головну</a>
+                </section>
+            {% elif phase == 'complete' %}
+                <section class="io-card io-result" aria-labelledby="io-result-title">
+                    <span class="io-eyebrow">Гру завершено</span>
+                    <h2 id="io-result-title">Твій результат</h2>
+                    <p class="io-result-score">{{ result['score'] }} <small>із {{ result['total'] }}</small></p>
+                    <p class="io-percent">{{ result['percentage'] }}% правильних відповідей</p>
+                    <progress class="io-progress" value="{{ result['score'] }}" max="{{ result['total'] }}" aria-label="Правильні відповіді"></progress>
+                    {% if result_saved %}
+                        <p class="io-meta">Результат збережено в твоєму особистому кабінеті.</p>
+                        <p class="io-meta">+{{ calculate_game_xp(result['score'], result['total'], result['details'] | map(attribute='is_correct') | list) }} XP за гру! <a href="{{ url_for('gamification.my_progress') }}">Переглянути досягнення</a></p>
+                    {% else %}
+                        <p class="io-meta">Це гостьове проходження — результат не збережено в історії.</p>
+                    {% endif %}
+                    <form method="post" action="{{ url_for('interactive.play_game', token=game['share_token']) }}">
+                        <input type="hidden" name="attempt_token" value="{{ attempt_token }}">
+                        <input type="hidden" name="action" value="restart">
+                        <button class="io-button io-button-primary" type="submit">Пройти ще раз</button>
+                    </form>
+                </section>
+                <section class="io-review" aria-labelledby="io-review-title">
+                    <h2 id="io-review-title">Розбір відповідей</h2>
+                    {% for item in result['details'] %}
+                        <article class="io-card io-review-item">
+                            <span class="io-eyebrow">Запитання {{ loop.index }}</span>
+                            <h3>{{ item['question'] }}</h3>
+                            <p class="{{ 'io-good' if item['is_correct'] else 'io-bad' }}">
+                                {{ 'Правильно' if item['is_correct'] else 'Неправильно' }}:
+                                твій вибір {{ item['user_answer'] }} ({{ item['user_answer_text'] }}),
+                                правильний — {{ item['correct_answer'] }} ({{ item['correct_answer_text'] }})
+                            </p>
+                            <p><strong>Пояснення:</strong> {{ item['explanation'] }}</p>
+                        </article>
+                    {% endfor %}
+                </section>
+            {% else %}
+                <section class="io-card" aria-labelledby="io-question-title">
+                    <div class="io-progress-heading">
+                        <span>Запитання {{ answered if phase == 'feedback' else answered + 1 }} із {{ total }}</span>
+                        <strong>{{ ((answered / total) * 100)|round|int }}% пройдено</strong>
+                    </div>
+                    <progress class="io-progress" value="{{ answered }}" max="{{ total }}" aria-label="Прогрес проходження"></progress>
+                    <p class="io-small">Серія правильних відповідей: <strong>{{ current_streak }}</strong> · Рекорд у грі: <strong>{{ best_streak }}</strong></p>
+                    <h2 id="io-question-title">{{ question['question_text'] }}</h2>
+
+                    {% if phase == 'question' %}
+                        <form id="io-answer-form" method="post" action="{{ url_for('interactive.play_game', token=game['share_token']) }}">
+                            <input type="hidden" name="attempt_token" value="{{ attempt_token }}">
+                            <input type="hidden" name="action" value="answer">
+                            <input type="hidden" name="question_id" value="{{ question['id'] }}">
+                            <fieldset class="io-options">
+                                <legend class="io-visually-hidden">{{ "Оберіть Правда або Неправда" if is_true_false else "Оберіть одну відповідь" }}</legend>
+                                {% for letter in ('AB' if is_true_false else 'ABCD') %}
+                                {% set option = question['option_' ~ (letter|lower)] %}
+                                <label class="io-option">
+                                    <input type="radio" name="answer" value="{{ letter }}" required>
+                                    <span class="io-letter">{{ letter }}</span>
+                                    <span class="io-option-text">{{ option }}</span>
+                                </label>
+                                {% endfor %}
+                            </fieldset>
+                            <button class="io-button io-button-primary io-submit" type="submit">Перевірити відповідь</button>
+                        </form>
+                        <p class="io-small">Спочатку обери варіант, а потім натисни «Перевірити відповідь».</p>
+                    {% else %}
+                        <div class="io-feedback {{ 'io-feedback-good' if is_correct else 'io-feedback-bad' }}" role="status">
+                            <h3>{{ 'Чудово, правильно!' if is_correct else 'Спробуй запам’ятати правильний варіант' }}</h3>
+                            <p>Твоя відповідь: <strong>{{ selected }} ({{ selected_text }})</strong>.</p>
+                            <p>Правильна відповідь: <strong>{{ correct }} ({{ correct_text }})</strong>.</p>
+                            <p><strong>Пояснення:</strong> {{ explanation }}</p>
+                        </div>
+                        <form method="post" action="{{ url_for('interactive.play_game', token=game['share_token']) }}">
+                            <input type="hidden" name="attempt_token" value="{{ attempt_token }}">
+                            <input type="hidden" name="action" value="next">
+                            <button class="io-button io-button-primary" type="submit">
+                                {{ 'Переглянути результат' if answered == total else 'Наступне запитання →' }}
+                            </button>
+                        </form>
+                    {% endif %}
+                </section>
+            {% endif %}
+            <p class="io-back"><a href="{{ url_for('home') }}">← На головну</a></p>
+        </div>
+    </main>
+</body>
+</html>

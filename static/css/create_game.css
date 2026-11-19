@@ -1,0 +1,423 @@
+/* ====================================================
+   CREATE GAME PAGE — спільний стиль InterOsvit
+   Класи обмежені .create-page, щоб не змінювати
+   головну сторінку, реєстрацію чи кабінет.
+   ==================================================== */
+
+.create-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f4f4f7;
+    color: #222222;
+}
+
+.create-page .header {
+    background: #ffffff;
+}
+
+.create-navbar {
+    gap: 18px;
+}
+
+.create-navigation a:hover {
+    color: #3528f5;
+}
+
+.create-header-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 43px;
+    padding: 11px 18px;
+    border: 1px solid #d8d6e5;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #302c78;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.create-header-link:hover {
+    background: #f7f6ff;
+    border-color: #3528f5;
+}
+
+.create-main {
+    flex: 1;
+    padding: 30px 0 76px;
+}
+
+.create-intro {
+    padding: 43px 48px;
+    background: #302c78;
+    color: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 15px 38px rgba(40, 30, 101, 0.1);
+}
+
+.create-eyebrow {
+    margin-bottom: 12px;
+    color: #dcd9ff;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.create-intro h1 {
+    margin-bottom: 14px;
+    color: #ffffff;
+    font-size: clamp(28px, 4vw, 38px);
+    line-height: 1.2;
+}
+
+.create-intro > p:last-child {
+    max-width: 650px;
+    color: #eeecff;
+    font-size: 16px;
+    line-height: 1.65;
+}
+
+.create-messages {
+    display: grid;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.create-message {
+    padding: 15px 18px;
+    border: 1px solid #dcd9ff;
+    border-radius: 10px;
+    background: #eeecff;
+    color: #302c78;
+    line-height: 1.5;
+}
+
+.create-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(275px, 0.9fr);
+    gap: 24px;
+    align-items: start;
+    margin-top: 28px;
+}
+
+.create-form-card,
+.create-help-card,
+.create-tip-card {
+    min-width: 0;
+    padding: 34px;
+    border: 1px solid #e7e5ef;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 28px rgba(39, 32, 83, 0.04);
+}
+
+.create-kicker {
+    margin-bottom: 11px;
+    color: #3528f5;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.create-card-heading {
+    margin-bottom: 29px;
+}
+
+.create-card-heading h2,
+.create-help-card h2 {
+    margin-bottom: 12px;
+    color: #302c78;
+    font-size: 26px;
+    line-height: 1.3;
+}
+
+.create-card-heading > p:last-child,
+.create-help-card > p:not(.create-kicker) {
+    color: #666478;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.create-form {
+    display: grid;
+    gap: 23px;
+}
+
+.create-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+}
+
+.create-field label {
+    color: #282640;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.create-field label span {
+    color: #3528f5;
+}
+
+.create-field input,
+.create-field select {
+    display: block;
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 15px;
+    border: 1px solid #d8d6e5;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #282640;
+    font: inherit;
+    font-size: 15px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-field select {
+    cursor: pointer;
+}
+
+.create-field input::placeholder {
+    color: #9290a0;
+}
+
+.create-field input:focus,
+.create-field select:focus {
+    outline: none;
+    border-color: #3528f5;
+    box-shadow: 0 0 0 3px rgba(53, 40, 245, 0.12);
+}
+
+.create-field-hint {
+    color: #77738b;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.create-form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.create-form-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 13px;
+    margin-top: 4px;
+}
+
+.create-submit,
+.create-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 47px;
+    padding: 13px 22px;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.create-submit {
+    border: 1px solid #3528f5;
+    background: #3528f5;
+    color: #ffffff;
+}
+
+.create-submit:hover {
+    border-color: #2920c9;
+    background: #2920c9;
+}
+
+.create-cancel {
+    border: 1px solid #d8d6e5;
+    background: #ffffff;
+    color: #302c78;
+}
+
+.create-cancel:hover {
+    border-color: #3528f5;
+    background: #f7f6ff;
+}
+
+.create-sidebar {
+    display: grid;
+    gap: 19px;
+}
+
+.create-help-card {
+    padding: 30px 27px;
+}
+
+.create-step-list {
+    list-style: none;
+    display: grid;
+    gap: 25px;
+    margin-top: 28px;
+}
+
+.create-step-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+}
+
+.create-step-number {
+    flex: 0 0 37px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 37px;
+    height: 37px;
+    border-radius: 10px;
+    background: #eeecff;
+    color: #3528f5;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.create-step-list h3 {
+    margin-bottom: 7px;
+    color: #302c78;
+    font-size: 15px;
+}
+
+.create-step-list p {
+    color: #666478;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.create-tip-card {
+    padding: 26px 27px;
+    background: #eeecff;
+    border-color: #dcd9ff;
+    box-shadow: none;
+}
+
+.create-tip-card strong {
+    color: #302c78;
+    font-size: 15px;
+}
+
+.create-tip-card p {
+    margin-top: 10px;
+    color: #4c4968;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.create-tip-card .create-tip-note {
+    margin-top: 15px;
+    padding-top: 13px;
+    border-top: 1px solid #d6d0ff;
+    font-size: 12px;
+}
+
+.create-footer {
+    padding: 32px 0;
+}
+
+.create-page a:focus-visible,
+.create-page button:focus-visible,
+.create-page input:focus-visible,
+.create-page select:focus-visible {
+    outline: 3px solid #aaa3ff;
+    outline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+    .create-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .create-sidebar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+}
+
+@media (max-width: 768px) {
+    .create-main {
+        padding: 24px 0 54px;
+    }
+
+    .create-intro {
+        padding: 34px 30px;
+    }
+
+    .create-navbar {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 600px) {
+    .create-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .create-form-card,
+    .create-help-card {
+        padding: 25px 21px;
+    }
+
+    .create-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .create-intro {
+        padding: 28px 22px;
+    }
+
+    .create-form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .create-submit,
+    .create-cancel {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .create-navigation {
+        justify-content: center;
+    }
+
+    .create-header-link {
+        width: 100%;
+    }
+
+    .create-card-heading h2,
+    .create-help-card h2 {
+        font-size: 23px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .create-header-link,
+    .create-field input,
+    .create-field select,
+    .create-submit,
+    .create-cancel {
+        transition: none;
+    }
+}

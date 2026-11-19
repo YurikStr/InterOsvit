@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Редактор запитань — {{ game.title }} — InterOsvit</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/question_editor.css') }}">
+</head>
+<body class="qe-page">
+  <header class="qe-header">
+    <div class="qe-shell qe-header-inner">
+      <a class="qe-logo" href="{{ url_for('home') }}">InterOsvit</a>
+      <a class="qe-back" href="{{ url_for('dashboard') }}">← До кабінету</a>
+    </div>
+  </header>
+  <main class="qe-shell qe-main">
+    <div class="qe-topline">Керування грою / Редактор запитань</div>
+    <div class="qe-title-row">
+      <div>
+        <h1>Запитання гри</h1>
+        <p class="qe-subtitle">{{ game.title }} · {{ game.subject }} · {{ questions|length }} запитань</p>
+      </div>
+      <a class="qe-button qe-button-secondary" href="{{ url_for('game_page', token=game.share_token) }}" target="_blank" rel="noopener">Переглянути гру ↗</a>
+    </div>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="qe-alert qe-alert-success" role="status">
+          {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="qe-notice">
+      <strong>Пам’ятай:</strong> зміни одразу впливають на гру за спільним посиланням.
+      Уже записані бали не перераховуються; активні проходження можуть зачепити зміни.
+      Після редагування перевір запитання повторно.
+    </div>
+
+    {% if game.generation_status == 'generating' %}
+      <div class="qe-alert" role="status">Триває генерація — редагування тимчасово недоступне.</div>
+    {% endif %}
+
+    {% if questions %}
+      <div class="qe-question-grid">
+      {% for q in questions %}
+        <article class="qe-card">
+          <div class="qe-card-top"><span class="qe-index">Запитання {{ loop.index }}</span><span class="qe-key">{{ "Пара" if game.game_mode == "matching" else "Правильна: " ~ q.correct_answer }}</span></div>
+          <h2>{{ q.question_text }}</h2>
+          {% if game.game_mode == 'matching' %}
+          <div class="qe-options"><div class="qe-option qe-option-correct">
+            <span class="qe-option-letter">↔</span><span>{{ q.option_a }}</span>
+          </div></div>
+          {% else %}
+          <div class="qe-options" aria-label="Варіанти відповідей">
+            {% for letter in 'ABCD' %}
+            <div class="qe-option {% if q.correct_answer == letter %}qe-option-correct{% endif %}">
+              <span class="qe-option-letter">{{ letter }}</span><span>{{ q['option_' ~ letter|lower] }}</span>
+              {% if q.correct_answer == letter %}<span class="qe-tick" aria-label="Правильна відповідь">✓</span>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="qe-explanation"><strong>Пояснення:</strong> {{ q.explanation or '—' }}</div>
+          <div class="qe-card-actions">
+            {% if game.generation_status == 'generating' %}
+              <span class="qe-button qe-button-disabled">Редагування недоступне</span>
+            {% else %}
+              <a class="qe-button qe-button-primary" href="{{ url_for('question_editor.edit_question', game_id=game.id, question_id=q.id) }}">Редагувати запитання</a>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+      </div>
+    {% else %}
+      <div class="qe-empty">
+        <h2>Запитань ще немає</h2>
+        <p>Згенеруй запитання у кабінеті, після цього вони з'являться тут для редагування.</p>
+        <a class="qe-button qe-button-primary" href="{{ url_for('dashboard') }}">Перейти до кабінету</a>
+      </div>
+    {% endif %}
+  </main>
+</body>
+</html>

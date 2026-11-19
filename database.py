@@ -1,7 +1,13 @@
 import secrets
+import os
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
+from contextlib import closing
+from pathlib import Path
 import sqlite3
+from dotenv import load_dotenv
+
+load_dotenv()
 GAME_LIMITS = {
     "free": 5,
     "premium": 50
@@ -378,8 +384,7 @@ def create_game(
     connection = connect_db()
 
     try:
-        # Блокуємо одночасне створення ігор
-        # до завершення перевірки ліміту.
+        # Захист від одночасного створення ігор
         connection.execute("BEGIN IMMEDIATE")
 
         user = connection.execute(
@@ -395,7 +400,12 @@ def create_game(
             raise ValueError("Користувача не знайдено.")
 
         plan = user["plan"]
-        monthly_limit = GAME_LIMITS.get(plan, 5)
+
+        # Враховуємо тестові привілеї розробника
+        monthly_limit = get_effective_game_limit(
+            user_id,
+            plan
+        )
 
         row = connection.execute(
             """
@@ -414,6 +424,7 @@ def create_game(
 
         used = row["created_games"]
 
+        # Перевірка місячного ліміту
         if used >= monthly_limit:
             raise ValueError(
                 "Ви використали місячний ліміт "
@@ -421,6 +432,7 @@ def create_game(
                 "Наступного місяця ліміт оновиться."
             )
 
+        # Унікальний токен гри
         share_token = secrets.token_urlsafe(16)
 
         cursor = connection.execute(
@@ -457,7 +469,6 @@ def create_game(
 
     finally:
         connection.close()
-
 
 def get_user_games(user_id):
     connection = connect_db()
@@ -794,7 +805,30 @@ def add_user_plan_to_users():
 
     finally:
         connection.close()
+def is_test_developer(user_id):
+    """Перевіряє, чи має користувач тестові привілеї."""
 
+    if os.getenv("APP_ENV") != "development":
+        return False
+
+    if os.getenv("ENABLE_DEV_QUOTA", "false").lower() != "true":
+        return False
+
+    developer_id = os.getenv("DEV_USER_ID", "")
+
+    if not developer_id.isdigit():
+        return False
+
+    return int(developer_id) == int(user_id)
+
+
+def get_effective_game_limit(user_id, plan):
+    """Повертає місячний ліміт відповідно до тарифу та режиму."""
+
+    if is_test_developer(user_id):
+        return 1_000_000
+
+    return GAME_LIMITS.get(plan, 5)
 def get_user_game_quota(user_id):
     connection = connect_db()
 
@@ -812,7 +846,12 @@ def get_user_game_quota(user_id):
             return None
 
         plan = user["plan"]
-        monthly_limit = GAME_LIMITS.get(plan, 5)
+
+        # Звичайний або тестовий ліміт
+        monthly_limit = get_effective_game_limit(
+            user_id,
+            plan
+        )
 
         row = connection.execute(
             """
@@ -896,7 +935,28 @@ def add_deleted_at_to_games():
 
     finally:
         connection.close()
+def set_user_plan(user_id, plan):
+    """Змінює тариф конкретного користувача. Повертає True при успіху."""
+    if plan not in ("free", "premium"):
+        raise ValueError("Невідомий тарифний план")
 
+    db_path = Path(__file__).resolve().parent / "interosvit.db"
+    # Якщо у database.py БД налаштована іншим шляхом, використай той самий шлях тут.
+    with closing(sqlite3.connect(db_path)) as connection:
+        with connection:
+            cursor = connection.execute(
+                "UPDATE users SET plan = ? WHERE id = ?",
+                (plan, user_id),
+            )
+            return cursor.rowcount > 0
+def is_test_developer(user_id):
+    """Дозволяє розширену квоту лише розробнику локально."""
+    return (
+        os.getenv("APP_ENV") == "development"
+        and os.getenv("ENABLE_DEV_QUOTA", "false").lower() == "true"
+        and os.getenv("DEV_USER_ID", "").isdigit()
+        and int(os.getenv("DEV_USER_ID")) == int(user_id)
+    )
 if __name__ == "__main__":
     test_game_owner()
 if __name__ == "__main__":
@@ -910,3 +970,12 @@ if __name__ == "__main__":
     check_database()
     check_database_integrity()
     test_game_owner()
+
+
+# INTEROSVIT_GAMIFICATION_WRAPPER_V1
+_io_original_save_game_result_v1 = save_game_result
+
+def save_game_result(*args, **kwargs):
+    """Persist one attempt and award XP; avoid duplicate replay."""
+    from gamification_store import save_with_gamification
+    return save_with_gamification(_io_original_save_game_result_v1, *args, **kwargs)

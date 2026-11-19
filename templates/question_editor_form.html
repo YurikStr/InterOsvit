@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Редагування запитання — {{ game.title }} — InterOsvit</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/question_editor.css') }}">
+</head>
+<body class="qe-page">
+  <header class="qe-header">
+    <div class="qe-shell qe-header-inner">
+      <a class="qe-logo" href="{{ url_for('home') }}">InterOsvit</a>
+      <a class="qe-back" href="{{ url_for('question_editor.list_questions', game_id=game.id) }}">← До запитань</a>
+    </div>
+  </header>
+  <main class="qe-shell qe-main qe-form-shell">
+    <div class="qe-topline">{{ game.title }} / Запитання №{{ question.id }}</div>
+    <h1>Редагувати запитання</h1>
+    <p class="qe-subtitle">Виправ текст, варіанти, правильний ключ або пояснення. Зміни збережуться без генерації OpenAI.</p>
+    {% if error %}
+      <div class="qe-alert qe-alert-error" role="alert">{{ error }}</div>
+    {% endif %}
+    <form class="qe-form" method="post" action="{{ url_for('question_editor.edit_question', game_id=game.id, question_id=question.id) }}">
+      <input type="hidden" name="editor_csrf" value="{{ csrf }}">
+      <input type="hidden" name="question_version" value="{{ version }}">
+      <div class="qe-field">
+        <label for="question_text">{{ "Лівий елемент пари" if game.game_mode == "matching" else "Текст запитання" }} <span aria-hidden="true">*</span></label>
+        <textarea id="question_text" name="question_text" rows="5" maxlength="1500" required>{{ values.question_text }}</textarea>
+        <span class="qe-field-hint">До 1500 символів. Умова має бути однозначною.</span>
+      </div>
+      {% if game.game_mode == 'matching' %}
+      <p class="qe-field-hint">У режимі пар відредагуй лівий і правий елемент. Правильна відповідність задається самою парою.</p>
+      <div class="qe-field"><label for="option_a">Правий елемент пари</label>
+        <input id="option_a" name="option_a" type="text" maxlength="300" value="{{ values.option_a }}" required></div>
+      {% for letter in 'BCD' %}
+      <input type="hidden" name="option_{{ letter|lower }}" value="{{ values['option_' ~ (letter|lower)] }}">
+      {% endfor %}
+      {% elif game.game_mode == 'true_false' %}
+      <p class="qe-field-hint">У режимі «Правда чи неправда» варіанти зафіксовані: A — Правда, B — Неправда.</p>
+      {% for letter in 'ABCD' %}
+      <input type="hidden" name="option_{{ letter|lower }}" value="{{ values['option_' ~ (letter|lower)] }}">
+      {% endfor %}
+      {% else %}
+      <fieldset class="qe-fieldset">
+        <legend>Варіанти відповідей</legend>
+        <p class="qe-field-hint">Усі чотири варіанти обов'язкові та мають відрізнятися.</p>
+        <div class="qe-fields-grid">
+          {% for letter in 'ABCD' %}
+            <div class="qe-field">
+              <label for="option_{{ letter|lower }}">Варіант {{ letter }} <span aria-hidden="true">*</span></label>
+              <input id="option_{{ letter|lower }}" name="option_{{ letter|lower }}" type="text" maxlength="300" value="{{ values['option_' ~ letter|lower] }}" required>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+      {% endif %}
+      {% if game.game_mode == 'matching' %}
+      <input type="hidden" name="correct_answer" value="A">
+      {% else %}
+      <div class="qe-field">
+        <label for="correct_answer">Правильна відповідь <span aria-hidden="true">*</span></label>
+        <select id="correct_answer" name="correct_answer" required>
+          {% for letter in ('AB' if game.game_mode == 'true_false' else 'ABCD') %}
+            <option value="{{ letter }}" {% if values.correct_answer == letter %}selected{% endif %}>{{ letter }}</option>
+          {% endfor %}
+        </select>
+        <span class="qe-field-hint">Переконайся, що літера відповідає правильному тексту варіанта.</span>
+      </div>
+      {% endif %}
+      <div class="qe-field">
+        <label for="explanation">Пояснення <span aria-hidden="true">*</span></label>
+        <textarea id="explanation" name="explanation" rows="6" maxlength="2500" required>{{ values.explanation or '' }}</textarea>
+        <span class="qe-field-hint">Поясни правильну відповідь своїми словами. Краще не згадувати літеру варіанта в самому поясненні.</span>
+      </div>
+      <div class="qe-form-footer">
+        <a class="qe-button qe-button-secondary" href="{{ url_for('question_editor.list_questions', game_id=game.id) }}">Скасувати</a>
+        <button class="qe-button qe-button-primary" type="submit">Зберегти зміни</button>
+      </div>
+    </form>
+    <div class="qe-notice qe-footnote">Редактор перевіряє заповнення полів, довжину й унікальність варіантів. Математичну або граматичну правильність змін потрібно перевірити окремо.</div>
+  </main>
+</body>
+</html>

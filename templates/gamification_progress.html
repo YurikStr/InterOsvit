@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Мої досягнення — InterOsvit</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/gamification.css') }}">
+</head>
+<body class="gm-page">
+  <header class="gm-header">
+    <div class="gm-container gm-nav">
+      <a class="gm-logo" href="{{ url_for('home') }}">InterOsvit</a>
+      <nav aria-label="Навігація">
+        <a href="{{ url_for('dashboard') }}">Особистий кабінет</a>
+        <a href="{{ url_for('logout') }}">Вийти</a>
+      </nav>
+    </div>
+  </header>
+  <main class="gm-container">
+    <div class="gm-intro">
+      <p class="gm-eyebrow">ІГРОВИЙ ПРОГРЕС</p>
+      <h1>Мої досягнення</h1>
+      <p>Вітаємо, {{ user['username'] }}! Відстежуй XP, серії правильних відповідей і навчальні перемоги.</p>
+    </div>
+
+    <section class="gm-hero" aria-label="Рівень і очки досвіду">
+      <div class="gm-level"><span>Рівень</span><strong>{{ progress.level }}</strong></div>
+      <div class="gm-level-progress">
+        <div class="gm-split"><h2>{{ progress.xp }} XP</h2><span>До наступного рівня: {{ progress.remaining_xp }} XP</span></div>
+        <progress max="{{ progress.next_level_xp }}" value="{{ progress.within_level }}" aria-label="Прогрес до наступного рівня"></progress>
+        <p>За завершення гри: 10 XP, за кожну правильну відповідь: 10 XP, за ідеальний результат: +20 XP, за кожну відповідь у найдовшій серії: +2 XP. Перше проходження кожної гри дає 100% XP. За кожне повторне проходження тієї самої гри нараховується 25%. Вже отримані нагороди не перераховуються.</p>
+      </div>
+    </section>
+
+    <section class="gm-stats" aria-label="Твоя статистика">
+      <article><span>Завершено ігор</span><strong>{{ progress.played }}</strong></article>
+      <article><span>Правильних відповідей</span><strong>{{ progress.correct }} / {{ progress.total }}</strong></article>
+      <article><span>Точність</span><strong>{{ progress.accuracy }}%</strong></article>
+      <article><span>Найдовша серія</span><strong>{{ progress.best_streak }}</strong></article>
+    </section>
+
+    <section class="gm-section" aria-labelledby="gm-badges-title">
+      <div class="gm-section-heading"><h2 id="gm-badges-title">Досягнення</h2><p>{{ progress.unlocked_count }} із {{ progress.achievements|length }} відкрито</p></div>
+      <div class="gm-badges">
+        {% for badge in progress.achievements %}
+          <article class="gm-badge {{ 'gm-unlocked' if badge.unlocked else 'gm-locked' }}">
+            <div class="gm-badge-icon" aria-hidden="true">{{ '★' if badge.unlocked else '◇' }}</div>
+            <div>
+              <h3>{{ badge.title }} {% if badge.unlocked %}<span class="gm-unlock-note">Отримано</span>{% endif %}</h3>
+              <p>{{ badge.description }}</p>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="gm-section" aria-labelledby="gm-last-title">
+      <h2 id="gm-last-title">Останні проходження</h2>
+      {% set recent_games = progress.recent %}
+      {% if recent_games %}
+        <div class="gm-table-wrap">
+          <table><thead><tr><th>Дата</th><th>Режим</th><th>Результат</th><th>Найдовша серія</th><th>XP</th></tr></thead>
+          <tbody>{% for item in recent_games %}<tr>
+            <td>{{ item.completed_at }}</td>
+            <td>{{ {'classic':'Класичний', 'interactive':'Вікторина', 'true_false':'Правда / неправда', 'matching':'Пари'}.get(item.mode, 'Гра') }}</td>
+            <td>{{ item.score }} / {{ item.total }}</td>
+            <td>{{ '—' if item.legacy else item.best_streak }}</td>
+            <td>+{{ item.xp }}</td>
+          </tr>{% endfor %}</tbody></table>
+        </div>
+      {% else %}
+        <p class="gm-muted">Поки що немає завершених ігор. Пройди гру, щоб здобути перші XP.</p>
+      {% endif %}
+    </section>
+    <a class="gm-back" href="{{ url_for('dashboard') }}">← Повернутися до кабінету</a>
+  </main>
+</body>
+</html>

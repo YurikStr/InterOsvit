@@ -1,0 +1,52 @@
+/* ============================================================
+   Фінальні виправлення адаптивності InterOsvit — 09.11.2026
+   Додати ПІСЛЯ всіх попередніх CSS-правил.
+   ============================================================ */
+
+/* Довгий підпис у фіолетовому блоці головної сторінки */
+.hero-image {
+    min-width: 0;
+}
+
+.image-placeholder {
+    padding: 24px;
+    text-align: center;
+}
+
+.image-placeholder p {
+    font-size: 16px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+/* Зручніша сенсорна зона кнопки видалення в кабінеті */
+.dashboard-delete-button {
+    min-height: 44px;
+    padding: 10px 12px;
+}
+
+@media (max-width: 768px) {
+    /* Ілюстративний блок займає ширину контейнера, а не
+       звужується до ширини найкоротшого слова. */
+    .hero-image {
+        flex: 0 1 auto;
+        width: 100%;
+        max-width: 480px;
+    }
+
+    .image-placeholder {
+        width: 100%;
+        min-height: 250px;
+        height: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Збільшуємо область натискання навігаційних посилань. */
+    .navigation a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 40px;
+        padding: 6px 4px;
+    }
+}

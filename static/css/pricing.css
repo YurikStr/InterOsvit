@@ -1,0 +1,79 @@
+/* Окрема сторінка тарифів: фірмова палітра InterOsvit. */
+.pricing-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f4f4f7;
+    color: #222222;
+    font-family: Arial, sans-serif;
+}
+.pricing-page .header { background: #ffffff; }
+.pricing-page .pricing-navbar { gap: 20px; }
+.pricing-navigation { display: flex; flex-wrap: wrap; gap: 20px; }
+.pricing-navigation a { color: #302c78; text-decoration: none; font-weight: 600; }
+.pricing-navigation a:hover { text-decoration: underline; }
+.pricing-main { flex: 1; padding-top: 62px; padding-bottom: 55px; }
+.pricing-heading { text-align: center; margin-bottom: 36px; }
+.pricing-eyebrow { color: #3528f5; font-weight: 700; letter-spacing: .025em; }
+.pricing-heading h1 { font-size: clamp(29px, 4vw, 44px); color: #302c78; margin: 12px 0 14px; }
+.pricing-heading p { color: #555; line-height: 1.55; }
+.pricing-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: stretch; }
+.pricing-card { background: #fff; border: 1px solid #dedde9; border-radius: 18px; padding: 30px; display: flex; flex-direction: column; min-width: 0; box-shadow: 0 6px 24px rgba(36,31,99,.055); }
+.pricing-card-premium { border: 2px solid #3528f5; }
+.pricing-card-top h2 { color: #302c78; font-size: 29px; margin: 18px 0 10px; }
+.pricing-pill { display: inline-block; border-radius: 999px; padding: 7px 12px; background: #f4f4f7; color: #302c78; font-size: 13px; font-weight: bold; }
+.pricing-pill-premium { background: #e6e3ff; }
+.pricing-price { font-size: 19px; font-weight: bold; color: #302c78; margin-bottom: 12px; }
+.pricing-description { line-height: 1.5; color: #5a5a66; }
+.pricing-benefits { margin: 23px 0 32px; padding: 0 0 0 22px; list-style: '✓  '; }
+.pricing-benefits li { margin: 12px 0; line-height: 1.55; padding-left: 3px; }
+.pricing-card-action { margin-top: auto; }
+.pricing-card-action form { margin: 0; }
+.pricing-button { display: block; width: 100%; padding: 14px 16px; border: 2px solid transparent; border-radius: 10px; cursor: pointer; font: inherit; font-weight: bold; text-decoration: none; text-align: center; transition: filter .15s ease, transform .15s ease; }
+.pricing-button:hover { filter: brightness(.94); }
+.pricing-button:active { transform: translateY(1px); }
+.pricing-button-primary { background: #3528f5; color: #fff; }
+.pricing-button-secondary { color: #302c78; background: #fff; border-color: #302c78; }
+.pricing-current, .pricing-unavailable { display: block; padding: 13px 14px; border-radius: 10px; background: #f4f4f7; text-align: center; font-weight: 700; color: #302c78; }
+.pricing-unavailable { font-weight: 400; }
+.pricing-messages { background: #e6e3ff; border-radius: 10px; padding: 13px 17px; margin-bottom: 22px; }
+.pricing-messages p { margin: 0; }
+.pricing-footer { padding: 23px 0; border-top: 1px solid #dedde9; color: #666; background: #fff; text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+    .pricing-main { padding-top: 36px; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .pricing-card { padding: 23px; }
+    .pricing-navbar { flex-wrap: wrap; }
+    .pricing-navigation { gap: 12px; }
+}
+.pricing-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    filter: none;
+    transform: none;
+}
+
+.pricing-button:disabled:hover,
+.pricing-button:disabled:active {
+    filter: none;
+    transform: none;
+}
+.pricing-button-current {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 20px;
+
+    background: #f2f3f7;
+    color: #302c78;
+
+    border: none;
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+
+    cursor: default;
+    user-select: none;
+}

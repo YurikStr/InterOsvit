@@ -1,0 +1,254 @@
+/* Hero */
+
+.hero {
+    padding: 100px 0;
+    background: #f4f4f7;
+}
+
+.hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 50px;
+}
+
+.hero-text {
+    flex: 1;
+}
+
+.hero-text h1 {
+    font-size: 48px;
+    color: #302c78;
+    margin-bottom: 25px;
+}
+
+.hero-text p {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 35px;
+}
+
+.hero-image {
+    flex: 1;
+}
+
+.image-placeholder {
+    height: 300px;
+    background: #302c78;
+    color: white;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    font-size: 24px;
+}
+
+/* Subjects */
+
+.subjects,
+.how-it-works {
+    padding: 80px 0;
+    text-align: center;
+}
+
+h2 {
+    font-size: 32px;
+    color: #302c78;
+    margin-bottom: 40px;
+}
+
+.subject-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.subject-card {
+    padding: 35px 15px;
+    background: #f4f4f7;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.subject-card:hover {
+    background: #e6e3ff;
+    transform: translateY(-5px);
+}
+
+/* Steps */
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+.step-card {
+    padding: 30px;
+    background: #f4f4f7;
+    border-radius: 12px;
+}
+
+.step-card span {
+    color: #3528f5;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.step-card h3 {
+    margin: 20px 0 12px;
+}
+
+/* Start section */
+
+.start-section {
+    padding: 70px 0;
+    background: #302c78;
+    color: white;
+    text-align: center;
+}
+
+.start-content h2 {
+    color: white;
+}
+
+.start-content p {
+    margin-bottom: 30px;
+}
+
+.light-button {
+    display: inline-block;
+    padding: 14px 30px;
+    color: #302c78;
+    background: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Footer */
+
+.footer {
+    padding: 40px 0;
+    text-align: center;
+    background: #f4f4f7;
+    line-height: 2;
+}
+
+.footer h3 {
+    color: #302c78;
+}
+
+/* Адаптація для планшетів */
+@media (max-width: 768px) {
+
+    .container {
+        width: 90%;
+    }
+
+    /* Навігація */
+    .navbar {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .navigation {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    /* Головний блок */
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero {
+        padding: 50px 0;
+    }
+
+    .hero h1 {
+        font-size: 32px;
+    }
+
+    /* Картки предметів */
+    .subject-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Етапи навчання */
+    .steps {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Адаптація для телефонів */
+@media (max-width: 480px) {
+
+    .container {
+        width: 92%;
+    }
+
+    /* Шапка сайту */
+    .navbar {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .navigation {
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .navigation a {
+        font-size: 14px;
+    }
+
+    /* Головний блок */
+    .hero {
+        padding: 35px 0;
+    }
+
+    .hero h1 {
+        font-size: 28px;
+    }
+
+    .hero p {
+        font-size: 15px;
+    }
+
+    .hero-content {
+        gap: 25px;
+    }
+
+    /* Кнопки */
+    button {
+        max-width: 100%;
+    }
+
+    /* Картки предметів */
+    .subject-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    /* Етапи навчання */
+    .steps {
+        grid-template-columns: 1fr;
+    }
+
+    /* Заголовки секцій */
+    section h2 {
+        font-size: 25px;
+    }
+
+    /* Підвал */
+    footer {
+        text-align: center;
+    }
+}

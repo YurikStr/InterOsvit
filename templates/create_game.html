@@ -1,108 +1,207 @@
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Створення гри — InterOsvit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/interactive_setup.css') }}">
 </head>
-<body>
+<body class="create-page">
 
-    <h1>Створення навчальної гри</h1>
+    <header class="header create-header">
+        <div class="container navbar create-navbar">
+            <a href="{{ url_for('home') }}" class="logo">InterOsvit</a>
 
-    <p>Налаштуй параметри своєї майбутньої гри.</p>
+            <nav class="navigation create-navigation" aria-label="Основна навігація">
+                <a href="{{ url_for('home') }}">Головна</a>
+                <a href="{{ url_for('dashboard') }}">Мій кабінет</a>
+            </nav>
 
-    <!-- Повідомлення користувачу -->
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+            <a href="{{ url_for('dashboard') }}" class="create-header-link">
+                ← До кабінету
+            </a>
+        </div>
+    </header>
 
-    <form
-        method="POST"
-        action="{{ url_for('create_game_route') }}"
-    >
+    <main class="create-main">
+        <div class="container">
 
-        <!-- CSRF-захист створення гри -->
-        <input
-            type="hidden"
-            name="create_game_csrf_token"
-            value="{{ create_game_csrf_token }}"
-        >
+            <section class="create-intro" aria-labelledby="create-page-heading">
+                <p class="create-eyebrow">Твоя нова навчальна гра</p>
+                <h1 id="create-page-heading">Створення навчальної гри</h1>
+                <p>
+                    Обери предмет, тему та складність, щоб підготувати
+                    цікаву перевірку знань.
+                </p>
+            </section>
 
-        <label for="title">Назва гри:</label>
-        <input
-            type="text"
-            id="title"
-            name="title"
-            placeholder="Назва гри"
-            required
-        >
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="create-messages" role="status" aria-live="polite">
+                        {% for message in messages %}
+                            <p class="create-message">{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
 
-        <br><br>
+            <div class="create-layout">
+                <section class="create-form-card" aria-labelledby="create-form-heading">
+                    <div class="create-card-heading">
+                        <p class="create-kicker">Налаштування</p>
+                        <h2 id="create-form-heading">Параметри гри</h2>
+                        <p>Заповни поля нижче. Усі параметри можна обрати перед створенням гри.</p>
+                    </div>
 
-        <label for="subject">Навчальний предмет:</label>
-        <select id="subject" name="subject" required>
-            <option value="">Обери предмет</option>
-            <option value="Математика">Математика</option>
-            <option value="Українська мова">Українська мова</option>
-            <option value="Англійська мова">Англійська мова</option>
-            <option value="Інформатика">Інформатика</option>
-            <option value="Біологія">Біологія</option>
-            <option value="Географія">Географія</option>
-        </select>
+                    <form class="create-form" method="POST" action="{{ url_for('create_game_route') }}">
 
-        <br><br>
+                        <input
+                            type="hidden"
+                            name="create_game_csrf_token"
+                            value="{{ create_game_csrf_token }}"
+                        >
 
-        <label for="topic">Тема гри:</label>
-        <input
-            type="text"
-            id="topic"
-            name="topic"
-            placeholder="Тема гри"
-            required
-        >
+                        <div class="create-field">
+                            <label for="title">Назва гри <span aria-hidden="true">*</span></label>
+                            <input
+                                type="text"
+                                id="title"
+                                name="title"
+                                placeholder="Наприклад, Математична вікторина"
+                                autocomplete="off"
+                                required
+                            >
+                        </div>
 
-        <br><br>
+                        <div class="create-field">
+                            <label for="subject">Навчальний предмет <span aria-hidden="true">*</span></label>
+                            <select id="subject" name="subject" required>
+                                <option value="" disabled selected>Обери предмет</option>
+                                <option value="Математика">Математика</option>
+                                <option value="Українська мова">Українська мова</option>
+                                <option value="Англійська мова">Англійська мова</option>
+                                <option value="Інформатика">Інформатика</option>
+                                <option value="Біологія">Біологія</option>
+                                <option value="Географія">Географія</option>
+                            </select>
+                        </div>
 
-        <label for="difficulty">Складність:</label>
-        <select id="difficulty" name="difficulty" required>
-            <option value="Легка">Легка</option>
-            <option value="Середня" selected>Середня</option>
-            <option value="Важка">Важка</option>
-        </select>
+                        <div class="create-field">
+                            <label for="topic">Тема гри <span aria-hidden="true">*</span></label>
+                            <input
+                                type="text"
+                                id="topic"
+                                name="topic"
+                                placeholder="Наприклад, Дроби та дії з ними"
+                                autocomplete="off"
+                                required
+                            >
+                            <p class="create-field-hint">Укажи конкретну навчальну тему.</p>
+                        </div>
 
-        <br><br>
+                        <div class="create-form-row">
+                            <div class="create-field">
+                                <label for="difficulty">Складність <span aria-hidden="true">*</span></label>
+                                <select id="difficulty" name="difficulty" required>
+                                    <option value="Легка">Легка</option>
+                                    <option value="Середня" selected>Середня</option>
+                                    <option value="Важка">Важка</option>
+                                </select>
+                            </div>
 
-        <label for="question_count">Кількість запитань:</label>
-        <select
-            id="question_count"
-            name="question_count"
-            required
-        >
-            <option value="5">5 запитань</option>
-            <option value="10" selected>10 запитань</option>
-            <option value="15">15 запитань</option>
-            <option value="20">20 запитань</option>
-        </select>
+                            <div class="create-field">
+                                <label for="question_count">Кількість запитань <span aria-hidden="true">*</span></label>
+                                <select id="question_count" name="question_count" required>
+                                    <option value="5">5 запитань</option>
+                                    <option value="10" selected>10 запитань</option>
+                                    <option value="15">15 запитань</option>
+                                    <option value="20">20 запитань</option>
+                                </select>
+                            </div>
+                        </div>
 
-        <br><br>
+                        <!-- Нові параметри інтерактивної гри -->
+                        <div class="create-field">
+                            <label for="game_mode">Режим проходження <span aria-hidden="true">*</span></label>
+                            <select id="game_mode" name="game_mode" required>
+                                <option value="interactive" selected>Інтерактивна вікторина — по одному запитанню</option>
+                                <option value="classic">Класичний тест — усі запитання на сторінці</option>
+                                <option value="true_false">Правда чи неправда — два варіанти</option>
+                                <option value="matching">Знайди відповідні пари — зіставлення</option>
+                            </select>
+                        </div>
 
-        <button type="submit">
-            Створити гру
-        </button>
+                        <div class="create-field">
+                            <label for="custom_instructions">Додаткові побажання до запитань (необов'язково)</label>
+                            <textarea id="custom_instructions" name="custom_instructions"
+                                      maxlength="500" rows="4"
+                                      placeholder="Наприклад: використовуй приклади з повсякденного життя, уникай складних термінів, додай логічні завдання..."></textarea>
+                            <p class="create-field-hint">До 500 символів. Побажання враховуватимуться під час генерації через OpenAI.</p>
+                        </div>
 
-    </form>
+                        <div class="create-form-actions">
+                            <button class="create-submit" type="submit">Створити гру</button>
+                            <a class="create-cancel" href="{{ url_for('dashboard') }}">
+                                Скасувати
+                            </a>
+                        </div>
+                    </form>
+                </section>
 
-    <br>
+                <aside class="create-sidebar" aria-labelledby="create-help-heading">
+                    <div class="create-help-card">
+                        <p class="create-kicker">Просто почати</p>
+                        <h2 id="create-help-heading">Як це працює?</h2>
 
-    <a href="{{ url_for('dashboard') }}">
-        Повернутися до кабінету
-    </a>
+                        <ol class="create-step-list">
+                            <li>
+                                <span class="create-step-number" aria-hidden="true">01</span>
+                                <div>
+                                    <h3>Обери предмет</h3>
+                                    <p>Укажи, що саме хочеш перевірити або повторити.</p>
+                                </div>
+                            </li>
+                            <li>
+                                <span class="create-step-number" aria-hidden="true">02</span>
+                                <div>
+                                    <h3>Налаштуй гру</h3>
+                                    <p>Вибери складність і кількість запитань.</p>
+                                </div>
+                            </li>
+                            <li>
+                                <span class="create-step-number" aria-hidden="true">03</span>
+                                <div>
+                                    <h3>Перейди до кабінету</h3>
+                                    <p>Після створення гра з'явиться в розділі «Мої ігри».</p>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div class="create-tip-card">
+                        <strong>Порада</strong>
+                        <p>
+                            Чітко сформульована тема допомагає створювати
+                            більш відповідні навчальні запитання.
+                        </p>
+                        <p class="create-tip-note">
+                            Генерація запитань запускається окремо в кабінеті,
+                            коли ця функція доступна.
+                        </p>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer create-footer">
+        <div class="container">
+            <h3>InterOsvit</h3>
+            <p>Інтерактивне навчання з використанням штучного інтелекту.</p>
+            <p>© 2026 InterOsvit. Усі права захищені.</p>
+        </div>
+    </footer>
 
 </body>
 </html>

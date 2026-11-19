@@ -1,87 +1,98 @@
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Вхід — InterOsvit</title>
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
-    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body class="auth-layout">
 
-    <main class="container">
+    <header class="header">
+        <div class="container navbar auth-navbar">
+            <a href="{{ url_for('home') }}" class="logo">InterOsvit</a>
 
-        <h1>Вхід до InterOsvit</h1>
+            <nav class="navigation" aria-label="Головна навігація">
+                <a href="{{ url_for('home') }}">Головна</a>
+                <a href="{{ url_for('home') }}#subjects">Можливості</a>
+                <a href="{{ url_for('home') }}#about">Про нас</a>
+            </nav>
 
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <p>{{ message }}</p>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+            <a href="{{ url_for('register') }}" class="login-button">Реєстрація</a>
+        </div>
+    </header>
 
-        <form
-            method="POST"
-            action="{{ url_for('login') }}"
-        >
+    <main class="auth-main">
+        <section class="auth-section" aria-labelledby="auth-title">
+            <div class="container">
+                <div class="auth-card">
+                    <p class="auth-eyebrow">З поверненням!</p>
+                    <h1 id="auth-title">Вхід до InterOsvit</h1>
+                    <p class="auth-description">
+                        Увійди, щоб повернутися до своїх ігор та результатів навчання.
+                    </p>
 
-            <!-- CSRF-захист форми входу -->
-            <input
-                type="hidden"
-                name="login_csrf_token"
-                value="{{ login_csrf_token }}"
-            >
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            <div class="auth-messages" role="status" aria-live="polite">
+                                {% for message in messages %}
+                                    <p class="auth-message">{{ message }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
 
-            <label for="email">
-                Електронна пошта
-            </label>
+                    <form class="auth-form" method="POST" action="{{ url_for('login') }}">
+                        <!-- Це поле необхідне для CSRF-захисту. -->
+                        <input
+                            type="hidden"
+                            name="login_csrf_token"
+                            value="{{ login_csrf_token }}"
+                        >
 
-            <input
-                type="email"
-                id="email"
-                name="email"
-                autocomplete="email"
-                required
-            >
+                        <div class="auth-field">
+                            <label for="email">Електронна пошта</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="name@example.com"
+                                autocomplete="email"
+                                required
+                            >
+                        </div>
 
-            <label for="password">
-                Пароль
-            </label>
+                        <div class="auth-field">
+                            <label for="password">Пароль</label>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Введи свій пароль"
+                                autocomplete="current-password"
+                                required
+                            >
+                        </div>
 
-            <input
-                type="password"
-                id="password"
-                name="password"
-                autocomplete="current-password"
-                required
-            >
+                        <button class="auth-submit" type="submit">Увійти</button>
+                    </form>
 
-            <button type="submit">
-                Увійти
-            </button>
-
-        </form>
-
-        <p>
-            Ще не маєте облікового запису?
-            <a href="{{ url_for('register') }}">
-                Зареєструватися
-            </a>
-        </p>
-
-        <p>
-            <a href="{{ url_for('home') }}">
-                На головну
-            </a>
-        </p>
-
+                    <p class="auth-switch">
+                        Ще немає облікового запису?
+                        <a href="{{ url_for('register') }}">Зареєструватися</a>
+                    </p>
+                </div>
+            </div>
+        </section>
     </main>
+
+    <footer class="footer auth-footer">
+        <div class="container">
+            <h3>InterOsvit</h3>
+            <p>Інтерактивне навчання з використанням штучного інтелекту.</p>
+            <p>© 2026 InterOsvit. Усі права захищені.</p>
+        </div>
+    </footer>
 
 </body>
 </html>
